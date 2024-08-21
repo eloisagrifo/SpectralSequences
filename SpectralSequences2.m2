@@ -153,61 +153,15 @@ net FilteredComplex := K -> (
   if #v === 0 then "0" else stack v)
 
 
--- Primitive constructor, takes a list eg {m_n,m_(n-1), ...,m_0} 
--- defining inclusion maps C=F_(n+1)C > F_(n)C > ... > F_0 C 
--- of subcomplexes of a chain complex (or simplicial complexes) 
--- and produces a filtered complex with integer keys the
--- corresponding chain complex.
--- If F_0C is not zero then by default F_(-1)C is added and is 0.
--- THIS IS THE CONVENTION WE WANT BY DEFAULT.  SEE 
--- THE HOPF FIBRATION EXAMPLE.  TO GET THE CORRECT INDICES ON THE E2 PAGE
--- WE WANT THE ZERO COMPLEX TO HAVE "FILTRATION DEGREE -1".
-
-
---- This constructor does work at present
---- If we try to use it we get an error
---
---i20 : K = filteredComplex({d,e})
---stdio:25:5:(3): error: key not found in hash table
---
-
---filteredComplex = method(Options => {
---    Shift => 0,
---    ReducedHomology => true})
 
 --filteredComplex(List) := FilteredComplex => opts -> L -> (
---  local maps;
---  local C;
---  if #L === 0 
---  then error "expected at least one chain complex map or simplicial complex";
---  if all(#L, p -> class L#p === SimplicialComplex) then (
---    kk := coefficientRing L#0;
---    if opts.ReducedHomology == true then (
---    C = complex L#0; -- By default the ambient simplicial complex is the first element of the list
---    maps = apply(#L-1, p -> map(C, complex L#(p+1), 
---        i -> sub(contract(transpose matrix{faces(i,L#0)}, matrix{faces(i,L#(p+1))}), kk))))
---    else (C = truncate(complex L#0,1); -- By default the ambient simplicial complex is the first element of the list
---    maps = apply(#L-1, p -> map(C, truncate(complex L#(p+1),1), 
---        i -> sub(contract(transpose matrix{faces(i,L#0)}, matrix{faces(i,L#(p+1))}), kk))))   
- --)
---  else (
---    maps = L;
---    if any(#maps, p -> class maps#p =!= ComplexMap) then (
---      error "expected sequence of chain complexes");
---    C = target maps#0;-- By default the ambient chain complex is target of first map.
---    if any(#maps, p -> target maps#p != C) then (
---      error "expected all map to have the same target"));     
---  Z := image map(C, C, i -> 0*id_(C#i)); -- make zero subcomplex as a subcomplex of ambient complex 
---   P := {};
--- myList := {};
--- for p from 0 to #maps - 1 do (
---	 myList = myList |
---	  {#maps - (p+1) -opts.Shift => image maps#p};
---	  );
---  if myList != {} then (P = {(#maps-opts.Shift) => C} | myList)
---  else P = { - opts.Shift => C} ;
---  if (last P)#1 != Z then (P = P | {(-1-opts.Shift) => Z});
---  return new FilteredComplex from P | {symbol zero => (ring C)^0, symbol cache =>  new CacheTable})
+
+
+
+----  What follows is a provisional fix for the ``master constructor method" 
+--filteredComplex(List) := FilteredComplex => opts -> L -> ( -- method which is one of the next
+-- item on the "to do" list --
+
 
  filteredComplex = method()
 
@@ -275,178 +229,64 @@ filteredComplex(List,ZZ,Boolean) := (L,Shift,ReducedHomology) -> (
 
 end
 
+
+
+
+
+
+
 ---
 -- Scratch Code Testing --
+
+
+---  This is extracted from the documentation to see what work is needed ---
 
 restart
 uninstallPackage"SpectralSequences2"
 installPackage"SpectralSequences2"
 installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 
-needsPackage "SpectralSequences2"
---needsPackage"Complexes"
-R = QQ[x,y,z,w] ;
-c2 = matrix(R,{{1},{0}}) ;
-c1 = matrix(R,{{0,1}}) ;
-C = complex({c1,c2})
-D_2 = image matrix(R,{{1}});
-D_1 = image matrix(R,{{1,0},{0,0}});
-D_0 = image matrix(R,{{1}});
-D = complex({inducedMap(D_0,D_1,C.dd_1),inducedMap(D_1,D_2,C.dd_2)})
-E_2 = image matrix(R,{{0}});
-E_1 = image matrix(R,{{1,0},{0,0}});
-E_0 = image matrix(R,{{1}});
-E = complex({inducedMap(E_0,E_1,C.dd_1),inducedMap(E_1,E_2,C.dd_2)})
 
-d = map(C,D,apply(for i i from min concentration C to max concentration C list i, i -> inducedMap(C_i,D_i,id_C _i)))
-
-e = map(C,E,apply(for i from min concentration C to max concentration C list i, i -> inducedMap(C_i,E_i, id_C _i)))
-
-isWellDefined(d)
-isWellDefined(e)
+----   To do list ---
 
 
-K = filteredComplex({d,e})
-
-K = filteredComplex({d,e},0)
-L = filteredComplex({d,e},1)
-M = filteredComplex({d,e},-1)
+--  Reincorporate this master constructor with the exixting provisional constructors --
 
 
--- The following script will make a filtered complex from a list of
--- chain complex maps 
 
-myFiltComplex := (L,Shift) -> (
+filteredComplex(List) := FilteredComplex => opts -> L -> (
   local maps;
   local C;
-      maps = L;
+  if #L === 0 
+  then error "expected at least one chain complex map or simplicial complex";
+  if all(#L, p -> class L#p === SimplicialComplex) then (
+    kk := coefficientRing L#0;
+    if opts.ReducedHomology == true then (
+    C = complex L#0; -- By default the ambient simplicial complex is the first element of the list
+    maps = apply(#L-1, p -> map(C, complex L#(p+1), 
+        i -> sub(contract(transpose matrix{faces(i,L#0)}, matrix{faces(i,L#(p+1))}), kk))))
+    else (C = truncate(complex L#0,1); -- By default the ambient simplicial complex is the first element of the list
+    maps = apply(#L-1, p -> map(C, truncate(complex L#(p+1),1), 
+        i -> sub(contract(transpose matrix{faces(i,L#0)}, matrix{faces(i,L#(p+1))}), kk))))   
+ )
+  else (
+    maps = L;
+    if any(#maps, p -> class maps#p =!= ComplexMap) then (
+      error "expected sequence of chain complexes");
     C = target maps#0;-- By default the ambient chain complex is target of first map.
-  Z := image map(C, C, i -> 0*id_(C_i)); -- make zero subcomplex as a subcomplex of ambient complex 
+    if any(#maps, p -> target maps#p != C) then (
+      error "expected all map to have the same target"));     
+  Z := image map(C, C, i -> 0*id_(C#i)); -- make zero subcomplex as a subcomplex of ambient complex 
    P := {};
  myList := {};
  for p from 0 to #maps - 1 do (
 	 myList = myList |
-	  {#maps - (p+1) -Shift => image maps#p};
+	  {#maps - (p+1) -opts.Shift => image maps#p};
 	  );
-  if myList != {} then (P = {(#maps-Shift) => C} | myList)
+  if myList != {} then (P = {(#maps-opts.Shift) => C} | myList)
   else P = { - opts.Shift => C} ;
-  if (last P)#1 != Z then (P = P | {(-1-Shift) => Z});
+  if (last P)#1 != Z then (P = P | {(-1-opts.Shift) => Z});
   return new FilteredComplex from P | {symbol zero => (ring C)^0, symbol cache =>  new CacheTable})
-
-
-L = {d,e}
-
-myFiltComplex(L,0)
-myFiltComplex(L,1)
-myFiltComplex(L,-1)
-
-
-
----
--- make a provisional constructor to handle filtered simplicial complexes
--- Boolean -- True will be reduced homology
--- Boolean -- False will be non-reduced homology
---
-
-myfilteredComplex := (L,Shift,ReducedHomology) -> (
-  local maps;
-  local C;
-  kk := coefficientRing L#0;
-    if ReducedHomology == true then (
-    C = complex chainComplex L#0; -- By default the ambient simplicial complex is the first element of the list
-    maps = apply(#L-1, p -> map(C, complex chainComplex L#(p+1), 
-	    i -> sub(contract(transpose matrix{faces(i,L#0)}, matrix{faces(i,L#(p+1))}), kk))))
-    else (C = complex truncate(chainComplex L#0,1); -- By default the ambient simplicial complex is the first element of the list
-   maps = apply(#L-1, p -> map(C, complex truncate(chainComplex L#(p+1),1), 
-        i -> sub(contract(transpose matrix{faces(i,L#0)}, matrix{faces(i,L#(p+1))}), kk))));   
-  Z := image map(C, C, i -> 0*id_(C_i)); -- make zero subcomplex as a subcomplex of ambient complex 
-   P := {};
- myList := {};
- for p from 0 to #maps - 1 do (
-	 myList = myList |
-	  {#maps - (p+1) -Shift => image maps#p};
-	  );
-  if myList != {} then (P = {(#maps-Shift) => C} | myList)
-  else P = { - Shift => C} ;
-  if (last P)#1 != Z then (P = P | {(-1-Shift) => Z});
-  return new FilteredComplex from P | {symbol zero => (ring C)^0, symbol cache =>  new CacheTable})
-    
-	  
-	      A = QQ[x,y,z,w];	     
-	      F2D = simplicialComplex {x*y*z, w*z};
-	      F1D = simplicialComplex {x*y, w};
-	      F0D = simplicialComplex {x,w};
-
-	      K = filteredComplex({F2D, F1D, F0D},0,true)
-	      
-	      k = filteredComplex({F2D, F1D, F0D},0,false)
-
-	      L = {F2D, F1D, F0D}
-
-	      filteredComplex({F2D, F1D, F0D},0,true)
-	      
-	      filteredComplex({F2D, F1D, F0D},0,false)
-
-     
-chainComplex L#0
-
-C = L#0
-
-coefficientRing L#0
-
-complex L#0
-
-C = complex chainComplex L#0
-
-truncate(1, C)
-
-
-complex truncate(chainComplex L#0,1)
-
-truncate(1, chainComplex L#0)
-
-
-
-  C = truncate(complex chainComplex L#0, 1)
-    
-
-
-
-
-
---filteredComplex(List) := FilteredComplex => opts -> L -> (
---  local maps;
---  local C;
---  if #L === 0 
---  then error "expected at least one chain complex map or simplicial complex";
---  if all(#L, p -> class L#p === SimplicialComplex) then (
---    kk := coefficientRing L#0;
---    if opts.ReducedHomology == true then (
---    C = complex L#0; -- By default the ambient simplicial complex is the first element of the list
---    maps = apply(#L-1, p -> map(C, complex L#(p+1), 
---        i -> sub(contract(transpose matrix{faces(i,L#0)}, matrix{faces(i,L#(p+1))}), kk))))
---    else (C = truncate(complex L#0,1); -- By default the ambient simplicial complex is the first element of the list
---    maps = apply(#L-1, p -> map(C, truncate(complex L#(p+1),1), 
---        i -> sub(contract(transpose matrix{faces(i,L#0)}, matrix{faces(i,L#(p+1))}), kk))))   
- --)
---  else (
---    maps = L;
---    if any(#maps, p -> class maps#p =!= ComplexMap) then (
---      error "expected sequence of chain complexes");
---    C = target maps#0;-- By default the ambient chain complex is target of first map.
---    if any(#maps, p -> target maps#p != C) then (
---      error "expected all map to have the same target"));     
---  Z := image map(C, C, i -> 0*id_(C#i)); -- make zero subcomplex as a subcomplex of ambient complex 
---   P := {};
--- myList := {};
--- for p from 0 to #maps - 1 do (
---	 myList = myList |
---	  {#maps - (p+1) -opts.Shift => image maps#p};
---	  );
---  if myList != {} then (P = {(#maps-opts.Shift) => C} | myList)
---  else P = { - opts.Shift => C} ;
---  if (last P)#1 != Z then (P = P | {(-1-opts.Shift) => Z});
---  return new FilteredComplex from P | {symbol zero => (ring C)^0, symbol cache =>  new CacheTable})
 
 
 
