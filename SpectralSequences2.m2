@@ -323,11 +323,6 @@ filteredComplex(List) := FilteredComplex => opts -> L -> (
   return new FilteredComplex from P | {symbol zero => (ring C)^0, symbol cache =>  new CacheTable})
 
 
-
-
-concentration C
-
-
 --
 
 
