@@ -35,8 +35,8 @@ newPackage(
       HomePage => "https://sites.google.com/view/nathan-grieve"},  
   {
       Name => "Eloisa Grifo", 
-      Email => "eloisa.grifo@virginia.edu",
-      HomePage => "http://people.virginia.edu/~er2eq/"},             
+      Email => "grifo@unl.edu",
+      HomePage => "https://eloisagrifo.github.io"},             
     {
       Name => "Gregory G. Smith", 
       Email => "ggsmith@mast.queensu.ca", 
