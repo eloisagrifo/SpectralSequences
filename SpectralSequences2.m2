@@ -128,7 +128,6 @@ min FilteredComplex := K -> min spots K
 support FilteredComplex := List => (
      K -> sort select (spots K, i -> K#i != 0))
 
-
 FilteredComplex _ InfiniteNumber :=
 FilteredComplex _ ZZ := Complex => (K,p) -> (
   if K#?p then K#p 
@@ -154,11 +153,6 @@ net FilteredComplex := K -> (
 
 ----  What follows is a provisional fix for the ``master constructor method" ----
 ----  This seems to be fine now ---
-
-filteredComplex = method(Options => {
-    Shift => 0,
-    ReducedHomology => true})
-
 
 filteredComplex = method(Options => {
     Shift => 0,
@@ -197,6 +191,26 @@ filteredComplex(List) := FilteredComplex => opts -> L -> (
   else P = { - opts.Shift => C} ;
   if (last P)#1 != Z then (P = P | {(-1-opts.Shift) => Z});
   return new FilteredComplex from P | {symbol zero => (ring C)^0, symbol cache =>  new CacheTable})
+
+
+--------------------------------------------------------------------------------
+-- constructing filtered complexes ---------------------------------------------
+--------------------------------------------------------------------------------
+
+
+-- make the filtered complex associated to the "naive truncation of a chain complex"
+
+--- the following method seems now to be updated OK ---
+
+filteredComplex(Complex) := FilteredComplex => opts-> C->(
+    n := (concentration C)_0;
+    m := (concentration C)_1;
+    p := length C;
+    if p > 0  then (
+    H := for i from 1 to p list inducedMap(C,naiveTruncation(C,-i,infinity));
+    filteredComplex( H, Shift => - m) )
+    else filteredComplex {map(C, image(0 * id_C), id_C)}--{map(C, id_C} -- now the constructor supports the zero chain complex
+	      )
 
 
 end
