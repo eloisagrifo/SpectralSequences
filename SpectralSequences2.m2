@@ -623,13 +623,10 @@ end
 
 
 
-
-
-
-
 ---
 -- Scratch Code Testing --
 
+-- the "to do list" follows this test example 
 
 ---  This is extracted from the documentation to see what work is needed ---
 
@@ -680,7 +677,10 @@ installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 ----   To do list ---
 
 ----  Next item on the to do list -----
---
+
+-- Rebuild the documentation for the updated methods above (this should be easy)
+-- Update the tensor product complex and hom complex filtrations (some more detailed study of the "Complexes" updates
+-- for tensor product and hom complex are required for this step.)
 
 
 
