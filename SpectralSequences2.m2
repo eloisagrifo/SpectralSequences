@@ -246,17 +246,6 @@ installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 --------------------------------------------------------------------------------
 
 
--- make the filtered complex associated to the "naive truncation of a chain complex"
-filteredComplex ChainComplex := FilteredComplex => opts-> C->( complete C; 
-    n := max support C;
-    m := min support C;
-    p := length C;
-    if p > 0  then (
-    H := for i from 1 to p list inducedMap(C,truncate(C,-i));
-    filteredComplex( H, Shift => - m) )
-    else filteredComplex {map(C, image(0 * id_C), id_C)}--{map(C, id_C} -- now the constructor supports the zero chain complex
-	      )
-
 
 --produce the "x-filtration" of the tensor product complex.
 FilteredComplex ** ChainComplex := FilteredComplex => (K,C) -> ( 
