@@ -21,7 +21,9 @@
 -- by the Complexes type which is currently been developed by Mike and Greg.
 --  All of the existing methods etc., from work correctly as advertised and
 -- so we need to ensure that this remains the case with the migration to the Complexes
--- framework as well.
+-- framework as well.  Some older "legacy" and other "patch" code has been removed
+-- while other methods have been optimized and/or required other forms of syntax
+-- and/or type changes.
 -------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 newPackage(
