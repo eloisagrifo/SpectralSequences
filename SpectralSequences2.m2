@@ -823,6 +823,15 @@ SpectralSequencePageMap _ List := Matrix => (d,i)-> (if (d)#?i then d#i
 
 SpectralSequencePageMap ^ List := Matrix => (d,i)-> (d_(-i))    
 
+pruningMaps = method()
+pruningMaps(SpectralSequencePage) := (E) -> ( if E.Prune == false then error "page is not pruned"
+    else
+    P := new PageMap;
+    P.degree = E.dd.degree;
+    apply(spots E.dd, i -> P#i = E.dd_i .cache.sourcePruningMap);
+    P    
+    )
+
 
 end
 
