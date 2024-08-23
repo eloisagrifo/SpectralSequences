@@ -821,6 +821,34 @@ uninstallPackage"SpectralSequences2"
 installPackage"SpectralSequences2"
 installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 
+
+--- The following updates the I-adic filtration constructors ---
+
+
+-- I-adic filtration code --
+-- the following script allows us to multiply a chain complex by an ideal
+-- this is a slightly updated script
+-- but somehow it hasn't been included already in the standalone "Complexes" package?
+Ideal * Complex := Complex => (I,C) -> (
+    complex hashTable(for i from min C to max C list i => inducedMap(I * C_(i-1), I * C_i, C.dd_i))
+    )
+
+B = QQ[a..d]
+J = ideal vars B
+C = complex res monomialCurveIdeal(B,{1,3,4})
+J*C
+
+
+filteredComplex(Ideal,Complex,ZZ) := FilteredComplex => opts -> (I,C,n) ->(
+    if n < 0 then error "expected a non-negative integer"
+    else
+    filteredComplex(apply(n, i -> inducedMap(C, I^(i+1) * C)), Shift => n)   
+    )
+
+K = filteredComplex(J,C,4)
+
+
+
 ----   To do list ---
 
 ----  Next item on the to do list -----
