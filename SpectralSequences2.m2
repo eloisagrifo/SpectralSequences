@@ -732,13 +732,10 @@ restart
 
 needsPackage "SpectralSequences2"
 
-A = QQ[x,y];
-B = koszulComplex vars A
-C = koszulComplex vars A
-T = B ** C -- this is a Complex
 
 --- Here is the proposed update from  FilteredComplex ** ChainComplex to 
 --- FilteredComplex**Complex
+--- This has been integrated into the main body of code and can be removed here now if desired.
 
 xTensorModules := (p,q,T)->(
     L = indices T_q;
@@ -782,7 +779,7 @@ filteredComplex(reverse for i from P to (N-1) list
 
 --- Here is the proposed update from  ChainComplex ** FilteredComplex to Complex ** FilteredComplex
 --produce the "y-filtration" of the tensor product complex.
-
+--- This has been integrated into the main body of code and can be removed here now if desired.
 
 yTensorModules := (p,q,T)->(
         L = indices T_q;
@@ -847,9 +844,7 @@ B**(filteredComplex C)
 -- Update the tensor product complex and hom complex filtrations (some more detailed study of the "Complexes" updates
 -- for tensor product and hom complex are required for this step.)
 
----  FilteredComplex ** ChainComplex appears to have been updated OK
---- Now implement similar changes to ChainComplex ** FilteredComplex
---- And then move onto Hom ---
+--- Update the two filtrations on Hom complex  ---
 
 
 
