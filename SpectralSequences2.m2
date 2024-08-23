@@ -651,12 +651,8 @@ C = koszulComplex vars A
 T = B ** C -- this is a Complex
 
 
-b = koszul vars A
-c = koszul vars A
-t = b ** c -- this is a ChainComplex 
-
-
----  This proposed mini-method "TestxTensormodules" would appear to makes the older method "Complexes" compatible; however there
+---  These are two proposed mini-methods which appear to be useful
+--  to makes the older method "Complexes" compatible;
 
 
 TestxTensormodules := (p,q,T)->(
@@ -669,86 +665,33 @@ TestxTensormodules := (p,q,T)->(
 )
 )
 
-TestxTensormodules(0,0,T)
-
-TestxTensormodules(0,1,T)
-
-TestxTensormodules(1,0,T)
-
-TestxTensormodules(1,1,T)
 
 
+-- the following seems to do what we want -- 
 
-
---  Compare with the older mini-method "xTensormodules" which is extracted
--- from the method "FilteredComplex**ChainComplex"
-
-     xTensormodules := (p,q,T)->(apply( (T#q).cache.indices,
-     i-> if (i#0) <=p then  
-     image (id_(((T#q).cache.components)#(((T#q).cache.indexComponents)#i)))
-     else image(0* id_(((T#q).cache.components)#(((T#q).cache.indexComponents)#i)))) )
-
---  Compare that the two outputs of these methods are the same (almost)
-
-TestxTensormodules(0,0,T)
-
-TestxTensormodules(0,1,T)
-
-TestxTensormodules(1,0,T)
-
-TestxTensormodules(1,1,T)
-
-xTensormodules(0,0,t)
-
-xTensormodules(0,1,t)
-
-xTensormodules(1,0,t)
-
-xTensormodules(1,1,t)
-
-
-
--- we actually want to make the output of this method a "Complex" and it is not 
--- so far off --
-
-          TestxTensorComplex := (T,p) ->(--K := new ChainComplex;
-		    --K.ring = T.ring;
-		    myList = {};
-		    for i from min T to max T list (
-		    if i-1 >= min T then (
+         TestxTensorComplex := (T,p) ->(
+		    myList = select(support T, i -> i-1 >= min T);
+		    complex hashTable(for i in myList list (
 		    i => inducedMap(
 			 directSum(TestxTensormodules(p,i-1,T)
 			      ),
 			 directSum(TestxTensormodules(p,i,T)),T.dd_i)
-		     )
+		     ))
 		 )
-  		    )
 
-		
-     xTensorComplex := (T,p) ->(--K := new ChainComplex;
-		   -- K.ring = T.ring;
-		    for i from min T to max T list (
-		    if i-1 >= min T then (
-		    i => inducedMap(
-			 directSum(xTensormodules(p,i-1,T)
-			      ),
-			 directSum(xTensormodules(p,i,T)),T.dd_i)
-		     )
-       	      )
-		    )
 
-		TestxTensorComplex(T,1)
-		xTensorComplex(t,1)
-		
-		TestxTensorComplex(T,0)
-		xTensorComplex(t,0)
+-- some examples --
 
+               TestxTensormodules(0,0,T)
+               TestxTensormodules(0,1,T)
+               TestxTensormodules(1,0,T)
+               TestxTensormodules(1,1,T)
+ 
+
+                TestxTensorComplex(T,3)
 		TestxTensorComplex(T,2)
-		xTensorComplex(t,2)
-
-
-		TestxTensorComplex(T,3)
-		xTensorComplex(t,3)
+		TestxTensorComplex(T,1)
+		TestxTensorComplex(T,0)
 
 ----   To do list ---
 
