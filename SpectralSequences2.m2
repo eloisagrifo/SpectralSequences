@@ -400,13 +400,32 @@ Hom (Complex, FilteredComplex) := FilteredComplex => opts -> (D, K) -> (
     )
 
 
----- Other filtered complexes constructors which need updating 
+--- The following updates the I-adic filtration constructors ---
+
+
+-- I-adic filtration code --
+-- the following script allows us to multiply a chain complex by an ideal
+-- this is a slightly updated script
+-- but somehow it hasn't been included already in the standalone "Complexes" package?
+Ideal * Complex := Complex => (I,C) -> (
+    complex hashTable(for i from min C to max C list i => inducedMap(I * C_(i-1), I * C_i, C.dd_i))
+    )
+
+
+filteredComplex(Ideal,Complex,ZZ) := FilteredComplex => opts -> (I,C,n) ->(
+    if n < 0 then error "expected a non-negative integer"
+    else
+    filteredComplex(apply(n, i -> inducedMap(C, I^(i+1) * C)), Shift => n)   
+    )
+
+---- Unless we are forgetting some, it seems that all other filtered complexes constructors which need updating 
 --- to be compatible with the "Complexes" update
 --- are omitted for now ------
 
---- However all of the "core" code needed to work with spectral sequences 
+--- All of the "core" code needed to work with spectral sequences 
 --- Appears to run correctly given the updates to make the "main constructor"
 --  "Complexes" compatible
+-- We just need to check that we aren't forgetting anything.
 	  
 ------------------------------------
 -- Pages and Sequences --
