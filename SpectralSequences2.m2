@@ -650,28 +650,22 @@ B = koszulComplex vars A
 C = koszulComplex vars A
 T = B ** C -- this is a Complex
 
-
----  These are two proposed mini-methods which appear to be useful
---  to makes the older method "Complexes" compatible;
-
+--- Here is the proposed update from  FilteredComplex ** ChainComplex to 
+--- FilteredComplex**Complex
 
 TestxTensormodules := (p,q,T)->(
     L = indices T_q;
     P = components T_q;
-    apply(#L,
-     i-> if ((L#i)#0) <=p then  
-     image (id_(P_i))
-     else image(0*id_(P_i)) 
+    apply(#L,i-> if ((L#i)#0) <=p then image (id_(P_i)) else image(0*id_(P_i)) 
 )
 )
 
 
 
--- the following seems to do what we want -- 
 
-         TestxTensorComplex := (T,p) ->(
-		    myList = select(support T, i -> i-1 >= min T);
-		    complex hashTable(for i in myList list (
+TestxTensorComplex := (T,p) ->(
+      myList = select(support T, i -> i-1 >= min T);
+	  complex hashTable(for i in myList list (
 		    i => inducedMap(
 			 directSum(TestxTensormodules(p,i-1,T)
 			      ),
@@ -679,28 +673,52 @@ TestxTensormodules := (p,q,T)->(
 		     ))
 		 )
 
+FilteredComplex**Complex:= (K,C) -> ( 
+		     supp := support K_infinity; 
+     -- try to handle the boundary cases --
+     if supp != {} and #supp > 1 then (		
+     	  N := max support K_infinity;
+	  P := min support K_infinity;
+	  T := K_infinity ** C;
+filteredComplex(reverse for i from P to (N-1) list 
+     inducedMap(T, TestxTensorComplex(T,i)), Shift => -P) 
+ )
+    else ( if #supp == 1 then
+	(
+	p := min supp;
+	t := K_infinity ** C;
+	filteredComplex( {inducedMap(t, TestxTensorComplex(t, p))}, Shift => - p + 1)
+	)
+	else( tt:= K_infinity ** C;
+	    filteredComplex({id_tt})
+	    )
+	)
+     )
 
--- some examples --
+-- An example --
 
-               TestxTensormodules(0,0,T)
-               TestxTensormodules(0,1,T)
-               TestxTensormodules(1,0,T)
-               TestxTensormodules(1,1,T)
- 
+A = QQ[x,y];
+B = koszulComplex vars A
+C = koszulComplex vars A
+T = B ** C -- this is a Complex
 
-                TestxTensorComplex(T,3)
-		TestxTensorComplex(T,2)
-		TestxTensorComplex(T,1)
-		TestxTensorComplex(T,0)
+(filteredComplex B)**C
+
 
 ----   To do list ---
 
 ----  Next item on the to do list -----
 
+
+
 -- Rebuild the documentation for the updated methods above (this should be easy)
+
 -- Update the tensor product complex and hom complex filtrations (some more detailed study of the "Complexes" updates
 -- for tensor product and hom complex are required for this step.)
 
+---  FilteredComplex ** ChainComplex appears to have been updated OK
+--- Now implement similar changes to ChainComplex ** FilteredComplex
+--- And then move onto Hom ---
 
 
 
