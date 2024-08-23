@@ -217,15 +217,15 @@ filteredComplex(Complex) := FilteredComplex => opts-> C->(
 --- FilteredComplex**Complex
 
 xTensorModules := (p,q,T)->(
-    L = indices T_q;
-    P = components T_q;
+    L := indices T_q;
+    P := components T_q;
     apply(#L,i-> if ((L#i)#0) <=p then image (id_(P_i)) else image(0*id_(P_i)) 
 )
 )
 
 
 xTensorComplex := (T,p) ->(
-      myList = select(support T, i -> i-1 >= min T);
+      myList := select(support T, i -> i-1 >= min T);
 	  complex hashTable(for i in myList list (
 		    i => inducedMap(
 			 directSum(xTensorModules(p,i-1,T)
@@ -242,7 +242,7 @@ FilteredComplex**Complex:= (K,C) -> (
 	  P := min support K_infinity;
 	  T := K_infinity ** C;
 filteredComplex(reverse for i from P to (N-1) list 
-     inducedMap(T, TestxTensorComplex(T,i)), Shift => -P) 
+     inducedMap(T, xTensorComplex(T,i)), Shift => -P) 
  )
     else ( if #supp == 1 then
 	(
@@ -261,14 +261,14 @@ filteredComplex(reverse for i from P to (N-1) list
 
 
 yTensorModules := (p,q,T)->(
-        L = indices T_q;
-    P = components T_q;
+        L := indices T_q;
+    P := components T_q;
     apply(#L,i-> if ((L#i)#1) <=p then image (id_(P_i)) else image(0*id_(P_i)) 
 )
 )
 
 yTensorComplex := (T,p)-> (
-      myList = select(support T, i -> i-1 >= min T);
+      myList := select(support T, i -> i-1 >= min T);
 	  complex hashTable(for i in myList list (
 		    i => inducedMap(
 			 directSum(yTensorModules(p,i-1,T)
@@ -303,8 +303,8 @@ filteredComplex(reverse for i from P to (N-1) list
 -- produce the "x-filtration" of the Hom complex.
 xHomModules := (n, d, H)->(
     -- want components {p,q} = Hom(-p, q) with p + q = d and p <= n
-    L = indices H_d;
-    P = components H_d;
+    L := indices H_d;
+    P := components H_d;
      apply(#L,
      i -> if  - ((L#i)#0) <= n then  
      image (id_(P_i))
@@ -314,7 +314,7 @@ xHomModules := (n, d, H)->(
 
 xHomComplex := (T,n) -> 
      	       (
-myList = select(support T, i -> i-1 >= min T);
+myList := select(support T, i -> i-1 >= min T);
 	  complex hashTable(for i in myList list (
 i => inducedMap(directSum(xHomModules(n,i-1,T)),directSum(xHomModules(n,i,T)),T.dd_i)
 )
@@ -330,14 +330,14 @@ Hom (FilteredComplex, Complex):= FilteredComplex => opts -> (K, D) -> (
      N := - max support K_infinity;
      P := - min support K_infinity;
      H := Hom(K_infinity, C, opts);
-     filteredComplex(reverse for i from N to P - 1 list inducedMap(H, TestxHomComplex(H,i)), 
+     filteredComplex(reverse for i from N to P - 1 list inducedMap(H, xHomComplex(H,i)), 
 	 Shift => - N)
      )
  else ( if #supp == 1 then
 	(
 	p := min supp;
 	h := Hom(K_infinity, C, opts);
-	filteredComplex( {inducedMap(h, TestxHomComplex(h, p))}, Shift =>  p + 1 )
+	filteredComplex( {inducedMap(h, xHomComplex(h, p))}, Shift =>  p + 1 )
 	)
 	else(
 	    hhh := Hom(K_infinity, C, opts);
@@ -353,20 +353,20 @@ Hom (FilteredComplex, Complex):= FilteredComplex => opts -> (K, D) -> (
 
 yHomModules := (n, d, H) -> (
     -- want components {p,q} = Hom(-p, q) with p + q = d and q <= n
-    L = indices H_d;
-    P = components H_d;
+    L := indices H_d;
+    P := components H_d;
      apply(#L,
      i -> if  - ((L#i)#1) <= n then  
      image (id_(P_i))
      else image(0* id_(P_i))
      )
  )
- )
+ 
 
 
 yHomComplex := (T,n) -> 
      	       (
-myList = select(support T, i -> i-1 >= min T);
+myList := select(support T, i -> i-1 >= min T);
 	  complex hashTable(for i in myList list (
 i => inducedMap(directSum(yHomModules(n,i-1,T)),directSum(yHomModules(n,i,T)),T.dd_i)
 )
@@ -849,6 +849,18 @@ uninstallPackage"SpectralSequences2"
 installPackage"SpectralSequences2"
 installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 
+
+---
+R = QQ[x,y];
+
+M = koszulComplex vars R
+N = koszulComplex vars R
+
+F' = (filteredComplex M) ** N
+F'' = M ** (filteredComplex N)
+
+G' = Hom(filteredComplex M,N)
+G'' = Hom(M,filteredComplex N)
 
 ----   To do list ---
 
