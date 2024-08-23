@@ -636,43 +636,119 @@ installPackage"SpectralSequences2"
 installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 
 
---- A small documentation example to deomonstrate that 
---- The core spectral sequence and filtered complex functionality works OK
---- After the updates to the the main "master constructor"
+--
+-- some sample mini-methods --
+-- which might be helpful for making "FilteredComplex ** ChainComplex" and 
+-- "ChainComplex ** FilteredComplex" "Complexes" compatible
+
+restart
+
+needsPackage "SpectralSequences2"
+
+A = QQ[x,y];
+B = koszulComplex vars A
+C = koszulComplex vars A
+T = B ** C -- this is a Complex
 
 
-		A = ZZ [s,t,u,v,w] ;
-		D0 = simplicialComplex {s} ;
-		D1 = simplicialComplex {s,t} ;
-		D2 = simplicialComplex {s,t,u} ;
-		D3 = simplicialComplex {s*t, u} ;
-		D4 = simplicialComplex {s*t, u, v} ;
-		D5 = simplicialComplex {s*t, u, v, w} ;
-		D6 = simplicialComplex {s*t, s*w ,u, v} ;
-		D7 = simplicialComplex {s*t, s*w ,t * w, u, v} ;
-		D8 = simplicialComplex {s*t, s*w ,t * w, u * v} ;
-		D9 = simplicialComplex {s*t, s*w ,t * w, u * v, s * v} ;
-		D10 = simplicialComplex {s*t, s*w ,t * w, u * v, s * v, s*u} ;
-		D11 = simplicialComplex {s*t, s*w ,t * w, u * v, s * v, s*u, u * w} ;
-		D12 = simplicialComplex {s*t, s*w ,t * w, u * v, s * v, s*u, u * w, t* u} ;
-		D13 = simplicialComplex {s*t, s*w ,t * w, u * v, s * v, s*u, u * w, t* u, t*u*w} ;
-		D14 = simplicialComplex {s*t, s*w ,t * w, u * v, s * v, s*u, u * w, t* u, t*u*w, s*u*w} ;
-		D15 = simplicialComplex {s*t, s*w ,t * w, u * v, s * v, s*u, u * w, t* u, t*u*w, s*u*w,s*t*u} ;
-		D16 = simplicialComplex {s*t, s*w ,t * w, u * v, s * v, s*u, u * w, t* u, t*u*w, s*u*w,s*t*u, s*u*v} ;
-		D17 = simplicialComplex {s*t, s*w ,t * w, u * v, s * v, s*u, u * w, t* u, t*u*w, s*u*w,s*t*u, s*u*v, s*t*w} ;
-		L = reverse {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12, D13, D14, D15, D16, D17} ;
-		K = filteredComplex (L, ReducedHomology => false) ;
-		E = prune spectralSequence K ;
-		E^0
-		E^1 .dd
-		E^8
-		E^8 .dd
-		E^9
-		E^9 .dd
-		E^infinity
-		prune HH K_infinity
----
+b = koszul vars A
+c = koszul vars A
+t = b ** c -- this is a ChainComplex 
 
+
+---  This proposed mini-method "TestxTensormodules" would appear to makes the older method "Complexes" compatible; however there
+
+
+TestxTensormodules := (p,q,T)->(
+    L = indices T_q;
+    P = components T_q;
+    apply(#L,
+     i-> if ((L#i)#0) <=p then  
+     image (id_(P_i))
+     else image(0*id_(P_i)) 
+)
+)
+
+TestxTensormodules(0,0,T)
+
+TestxTensormodules(0,1,T)
+
+TestxTensormodules(1,0,T)
+
+TestxTensormodules(1,1,T)
+
+
+
+
+--  Compare with the older mini-method "xTensormodules" which is extracted
+-- from the method "FilteredComplex**ChainComplex"
+
+     xTensormodules := (p,q,T)->(apply( (T#q).cache.indices,
+     i-> if (i#0) <=p then  
+     image (id_(((T#q).cache.components)#(((T#q).cache.indexComponents)#i)))
+     else image(0* id_(((T#q).cache.components)#(((T#q).cache.indexComponents)#i)))) )
+
+--  Compare that the two outputs of these methods are the same (almost)
+
+TestxTensormodules(0,0,T)
+
+TestxTensormodules(0,1,T)
+
+TestxTensormodules(1,0,T)
+
+TestxTensormodules(1,1,T)
+
+xTensormodules(0,0,t)
+
+xTensormodules(0,1,t)
+
+xTensormodules(1,0,t)
+
+xTensormodules(1,1,t)
+
+
+
+-- we actually want to make the output of this method a "Complex" and it is not 
+-- so far off --
+
+          TestxTensorComplex := (T,p) ->(--K := new ChainComplex;
+		    --K.ring = T.ring;
+		    myList = {};
+		    for i from min T to max T list (
+		    if i-1 >= min T then (
+		    i => inducedMap(
+			 directSum(TestxTensormodules(p,i-1,T)
+			      ),
+			 directSum(TestxTensormodules(p,i,T)),T.dd_i)
+		     )
+		 )
+  		    )
+
+		
+     xTensorComplex := (T,p) ->(--K := new ChainComplex;
+		   -- K.ring = T.ring;
+		    for i from min T to max T list (
+		    if i-1 >= min T then (
+		    i => inducedMap(
+			 directSum(xTensormodules(p,i-1,T)
+			      ),
+			 directSum(xTensormodules(p,i,T)),T.dd_i)
+		     )
+       	      )
+		    )
+
+		TestxTensorComplex(T,1)
+		xTensorComplex(t,1)
+		
+		TestxTensorComplex(T,0)
+		xTensorComplex(t,0)
+
+		TestxTensorComplex(T,2)
+		xTensorComplex(t,2)
+
+
+		TestxTensorComplex(T,3)
+		xTensorComplex(t,3)
 
 ----   To do list ---
 
