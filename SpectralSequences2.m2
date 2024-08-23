@@ -15,6 +15,15 @@
 -- You should have received a copy of the GNU General Public License along with
 -- this program.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------------
+--- This is a provisional package that is not intended to replace the existing
+--- SpectralSequences.m2.  We are working here to make SpectralSequences.m2 forward
+-- compatible with the changes to the ChainComplex type and its eventual replacement
+-- by the Complexes type which is currently been developed by Mike and Greg.
+--  All of the existing methods etc., from work correctly as advertised and
+-- so we need to ensure that this remains the case with the migration to the Complexes
+-- framework as well.
+-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 newPackage(
   "SpectralSequences2",
 --  AuxiliaryFiles => true,
@@ -153,6 +162,11 @@ net FilteredComplex := K -> (
 
 ----  What follows is a provisional fix for the ``master constructor method" ----
 ----  This seems to be fine now ---
+--  The constructor is basically the same as in the previous version --
+--  Note that the "default" SimplicialComplexes package is still based on
+-- ChainComplexes and not Complexes so we will need to make additional 
+-- updates in due time but at least for now we have a forward compatible 
+-- provisional fix.
 
 filteredComplex = method(Options => {
     Shift => 0,
