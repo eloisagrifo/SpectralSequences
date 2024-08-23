@@ -213,7 +213,95 @@ filteredComplex(Complex) := FilteredComplex => opts-> C->(
 	      )
 
 
----- Other more complicated filtered complexes constructors which need updating 
+--- Here is the proposed update from  FilteredComplex ** ChainComplex to 
+--- FilteredComplex**Complex
+
+xTensorModules := (p,q,T)->(
+    L = indices T_q;
+    P = components T_q;
+    apply(#L,i-> if ((L#i)#0) <=p then image (id_(P_i)) else image(0*id_(P_i)) 
+)
+)
+
+
+xTensorComplex := (T,p) ->(
+      myList = select(support T, i -> i-1 >= min T);
+	  complex hashTable(for i in myList list (
+		    i => inducedMap(
+			 directSum(xTensorModules(p,i-1,T)
+			      ),
+			 directSum(xTensorModules(p,i,T)),T.dd_i)
+		     ))
+		 )
+
+FilteredComplex**Complex:= (K,C) -> ( 
+		     supp := support K_infinity; 
+     -- try to handle the boundary cases --
+     if supp != {} and #supp > 1 then (		
+     	  N := max support K_infinity;
+	  P := min support K_infinity;
+	  T := K_infinity ** C;
+filteredComplex(reverse for i from P to (N-1) list 
+     inducedMap(T, TestxTensorComplex(T,i)), Shift => -P) 
+ )
+    else ( if #supp == 1 then
+	(
+	p := min supp;
+	t := K_infinity ** C;
+	filteredComplex( {inducedMap(t, xTensorComplex(t, p))}, Shift => - p + 1)
+	)
+	else( tt:= K_infinity ** C;
+	    filteredComplex({id_tt})
+	    )
+	)
+     )
+
+--- Here is the proposed update from  ChainComplex ** FilteredComplex to Complex ** FilteredComplex
+--produce the "y-filtration" of the tensor product complex.
+
+
+yTensorModules := (p,q,T)->(
+        L = indices T_q;
+    P = components T_q;
+    apply(#L,i-> if ((L#i)#1) <=p then image (id_(P_i)) else image(0*id_(P_i)) 
+)
+)
+
+yTensorComplex := (T,p)-> (
+      myList = select(support T, i -> i-1 >= min T);
+	  complex hashTable(for i in myList list (
+		    i => inducedMap(
+			 directSum(yTensorModules(p,i-1,T)
+			      ),
+			 directSum(yTensorModules(p,i,T)),T.dd_i)
+		     ))
+    )
+
+
+Complex ** FilteredComplex := FilteredComplex => (C,K) -> ( 
+	   supp := support K_infinity;
+	        -- try to handle the boundary cases --
+     if supp != {} and #supp > 1 then (		
+     	  N := max support K_infinity;
+	  P := min support K_infinity;
+	  T := C ** K_infinity;
+filteredComplex(reverse for i from P to (N-1) list 
+     inducedMap(T, yTensorComplex(T,i)), Shift => -P) 
+ )
+    else ( if #supp == 1 then
+	(
+	p := min supp;
+	t := C ** K_infinity;
+	filteredComplex( {inducedMap(t, yTensorComplex(t, p))}, Shift => - p + 1)
+	)
+	else( tt:= C ** K_infinity ;
+	    filteredComplex({id_tt})
+	    )
+	)
+     )
+
+
+---- Other filtered complexes constructors which need updating 
 --- to be compatible with the "Complexes" update
 --- are omitted for now ------
 
@@ -244,7 +332,6 @@ new Page := Page => (cl) -> (
      C)
 ring Page := C -> C.ring
 degree Page := C -> C.dd.degree
-
 
 netPage = method()
 netPage(Page,List,List) := (E,mins,maxs) -> (
