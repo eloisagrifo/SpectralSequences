@@ -186,6 +186,8 @@ filteredComplex(List) := FilteredComplex => opts -> L -> (
     maps = apply(#L-1, p -> map(C, complex chainComplex L#(p+1), 
 	    i -> sub(contract(transpose matrix{faces(i,L#0)}, matrix{faces(i,L#(p+1))}), kk))))
     else (C = naiveTruncation(complex chainComplex L#0,1,infinity); -- By default the ambient simplicial complex is the first element of the list
+--- the ``patch method" -- truncate a chain complex at a given homological degree 
+---- truncate(ChainComplex,ZZ) is now replaced by naivTruncation(Complex,ZZ,ZZ)
    maps = apply(#L-1, p -> map(C, naiveTruncation(complex chainComplex L#(p+1),1,infinity), 
         i -> sub(contract(transpose matrix{faces(i,L#0)}, matrix{faces(i,L#(p+1))}), kk))));   
  )
