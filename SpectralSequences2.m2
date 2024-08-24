@@ -3535,10 +3535,17 @@ G'' = Hom(M,filteredComplex N)
 -- The next step is to Rebuild the documentation for the updated methods above (this should be easy)
 
 ---- There were some issues with some of the topology examples that I couldn't figure out, so I skipped those.
+			----  If the updates to the code are implemented correctly, all of these examples should work.
+                        ----  I created many of those examples before I created the many other commutative algebra examples
+                        ----  that came afterwards
+----  We should run a spell checker etc. through the examples everywhere
 -- isChainComplexMap was replaced with isWellDefined 
+                       ------   Yes.
 -- Do we want to remove or truncate(C, n) function since we will instead use naiveTrunction(C, 1, infinity)?
+                       -----  Yes, this "patch code" can now be replaced with the function naiveTrunction(C, 1, infinity) from the
+                       ----- complexes package
 -- in some of the documentation we have "needsPackage SpectralSequences".  I've updated this to needsPackage SpectralSequences2 just so we're consistent.  We need to change this later. 
-
+                     ----- Yes.  This is good.
 
 
 
