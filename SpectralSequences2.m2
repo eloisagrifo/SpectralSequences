@@ -3685,16 +3685,6 @@ installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 
 
 ---
-R = QQ[x,y];
-
-M = koszulComplex vars R
-N = koszulComplex vars R
-
-F' = (filteredComplex M) ** N
-F'' = M ** (filteredComplex N)
-
-G' = Hom(filteredComplex M,N)
-G'' = Hom(M,filteredComplex N)
 
 ----   To do list ---
 
@@ -3721,7 +3711,22 @@ G'' = Hom(M,filteredComplex N)
 ----- 
 -- I think the only remaining items to check/update aside from the documentation is below 
 
+----  Here is the next "trouble spot in the example code"
 
+               R = ZZ/101[a_0..b_1, Degrees=>{2:{1,0},2:{0,1}}]; -- PP^1 x PP^1
+		M = intersect(ideal(a_0,a_1),ideal(b_0,b_1)) ; -- irrelevant ideal
+		M = M_*/(x -> x^5)//ideal ; -- Suitably high Frobenius power of M
+		G = complex res image gens M 
+		I = ideal random(R^1, R^{{-3,-3}}) -- ideal of C
+	        b = complex chainComplex gradedModule R^{{1,0}} -- make line bundle a chain complex
+		a = complex chainComplex gradedModule R^{{-2,-3}}
+		-- make the map OO(-2, -3) --> OO(1,0)     
+		f = chainComplexMap(b, a,{random(R^1, R^{{-3,-3}})}) ; 
+---  how can the above made to work with "Complexes?  note that b and a have now been converted to 
+-- complexes .... so this construction of f now needs to be updated ..... 
+		K = filteredComplex ({Hom(G,f)}) ; -- the two step filtered complex we want
+		E = prune spectralSequence K ;
+ 
 
 
 -----------------------------------------------------------
