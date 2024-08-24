@@ -3726,7 +3726,7 @@ installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 		K = filteredComplex ({Hom(G,f)}) ; -- the two step filtered complex we want
 		E = prune spectralSequence K ;
 
----  for example, using "ChainComplexes"
+---  for example, using "ChainComplexes" as in "SpectralSequences"
 --- everything that follows runs corectly
 
                 R = ZZ/101[a_0..b_1, Degrees=>{2:{1,0},2:{0,1}}]; -- PP^1 x PP^1
