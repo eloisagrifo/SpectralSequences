@@ -58,9 +58,9 @@ newPackage(
       HomePage => "http://math.berkeley.edu/~thanh"}},
   Headline => "spectral sequences",
   Keywords => {"Homological Algebra"},
-  PackageImports => {"Complexes"},
+  PackageImports => {"Complexes","PushForward"},
   --  PackageImports => {"Truncations"},
-  PackageExports => {"SimplicialComplexes", "ChainComplexExtras", "PushForward", "Complexes"}
+  PackageExports => {"SimplicialComplexes", "PushForward", "Complexes"}
   )
 
 export {
@@ -103,9 +103,10 @@ ReverseDictionary = value Core#"private dictionary"#"ReverseDictionary"
 --------------------------------------------------------------------------------
 -- CODE
 --------------------------------------------------------------------------------
-------------------------------------------------------------------------------------
--- ChainComplexExtraExtras -- Several people have worked on this portion of the code
---------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+--  We have removed almost all of the "patch code" that is now part of the "Complexes" package  --
+-------------------------------------------------------------------------------------------------
+--  The writing of some methods are much improved --
 
 
 
@@ -122,6 +123,16 @@ support Complex := List => (
      C -> sort select (spots C, i -> C_i != 0))
 
 
+-- the following relies on the pushFwd method from the package "PushForward.m2"
+-- perhaps this should be added to the Complexes package --
+
+pushFwd(RingMap, Complex):=o->(f,C) ->
+(   -- pushFwdC := complex chainComplex(source f);
+     complex hashTable(for i from min C to max C list (i => pushFwd(f,C.dd_i)))
+    )
+
+
+ 
 ----------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------
@@ -3997,6 +4008,41 @@ doc ///
      	  "maps between chain complexes"
 ///
  
+doc ///
+     Key
+     	  "Examples of change of rings Spectral Sequences"
+     Description
+     	  Text
+	       Here are some examples of change of rings spectral sequences. 
+	  Text
+	       Given a ring map f: R -> S, an R-module M and an R-module S,
+	       there is a spectral sequence E with E^2_{p,q} = Tor^S_p(Tor^R_q(M,S),N)
+	       that abuts to Tor^R_{p+q}(M,N).
+     	  Example
+--	       First example
+	       k=QQ;
+	       R=k[a,b,c];
+	       S=k[s,t];
+	       f = map(S,R,{s^2,s*t,t^2});
+	       N = coker vars S;
+	       M = coker vars R --;
+	       F := complex complete res N;
+	       --- this is where the error message arises ---
+	       pushFwdF := pushFwd(f,F);
+	       G := complex complete res M;
+	       E := spectralSequence(filteredComplex(G) ** pushFwdF);
+	       EE := spectralSequence(G ** (filteredComplex pushFwdF));
+     	       e = prune E;
+	       ee = prune EE;
+	       e^0
+	       e^1
+	       e^2
+	       e^infinity
+	       ee^0
+     SeeAlso
+	    "Filtrations and tensor product complexes"	    
+ 	  	  
+///
 
 end
 
@@ -4022,86 +4068,7 @@ installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 
 ----   To do list ---
 
-----  Next item on the to do list -----
-
--- It seems that all filtered complex contstructors are now implemented correctly
--- The next step is to Rebuild the documentation for the updated methods above (this should be easy)
-
----- There were some issues with some of the topology examples that I couldn't figure out, so I skipped those.
-			----  If the updates to the code are implemented correctly, all of these examples should work.
-                        ----  I created many of those examples before I created the many other commutative algebra examples
-                        ----  that came afterwards
-----  We should run a spell checker etc. through the examples everywhere
--- isChainComplexMap was replaced with isWellDefined 
-                       ------   Yes.
--- Do we want to remove or truncate(C, n) function since we will instead use naiveTrunction(C, 1, infinity)?
-                       -----  Yes, this "patch code" can now be replaced with the function naiveTrunction(C, 1, infinity) from the
-                       ----- complexes package
--- in some of the documentation we have "needsPackage SpectralSequences".  I've updated this to needsPackage SpectralSequences2 just so we're consistent.  We need to change this later. 
-                     ----- Yes.  This is good.
-
-
-
------ 
-
-----  Here is the next "trouble spot in the example code"
----- this runs correctly in "SpectralSequences.m2"
----- can these be updated/fixed in an obvious way?
-
---- Is the "issue here" the pushFwd method?
-
----- I.e., we need to update the following method -----
-
-
--- the following relies on the pushFwd method from the package "PushForward.m2"
-
-pushFwd(RingMap,ChainComplex):=o->(f,C) ->
-(    pushFwdC := chainComplex(source f);
-     maps := apply(spots C, i-> (i,pushFwd(f,C.dd_i)));
-     for i from min C to max C do (
-	 pushFwdC.dd_(maps#i_0) = maps#i_1 
-	 );
-    pushFwdC
-    )
-
-
-
-doc ///
-     Key
-     	  "Examples of change of rings Spectral Sequences"
-     Description
-     	  Text
-	       Here are some examples of change of rings spectral sequences. 
-	  Text
-	       Given a ring map f: R -> S, an R-module M and an R-module S,
-	       there is a spectral sequence E with E^2_{p,q} = Tor^S_p(Tor^R_q(M,S),N)
-	       that abuts to Tor^R_{p+q}(M,N).
-     	  Example
---	       First example
-	       k=QQ;
-	       R=k[a,b,c];
-	       S=k[s,t];
-	       f = map(S,R,{s^2,s*t,t^2});
-	       N = coker vars S;
-	       M = coker vars R --;
-	       F := complex complete res N;
-	       --- this is where the error message arises ---
-	       pushFwdF := pushFwd(f,F);
-	       G := commplex complete res M;
-	       E := spectralSequence(filteredComplex(G) ** pushFwdF);
-	       EE := spectralSequence(G ** (filteredComplex pushFwdF));
-     	       e = prune E;
-	       ee = prune EE;
-	       e^0
-	       e^1
-	       e^2
-	       e^infinity
-	       ee^0
-     SeeAlso
-	    "Filtrations and tensor product complexes"	    
- 	  	  
-///
-
+-----  Verify that all of the "tests" work as intended -----
 
 
 
