@@ -3855,6 +3855,71 @@ doc ///
 
 
 
+-- We might want to not include this next example
+doc ///
+     Key
+     	  "Example 2"
+     Headline
+     	  Easy example of a filtered simplicial complex
+     Description
+     	  Text
+	       We provide an easy example of a filtered simplicial complex and
+	       the resulting spectral sequence.  This example is small enough that
+	       all aspects of it can be explicitly computed by hand.
+	  Example
+	       A = QQ[a,b,c];
+	       D = simplicialComplex({a*b*c})
+	       F3D = D;
+	       F2D = simplicialComplex({a*b,a*c,b*c})
+	       F1D = simplicialComplex({a*b,c})
+	       F0D = simplicialComplex({a,b})
+	       K = filteredComplex({F3D,F2D,F1D,F0D}, ReducedHomology => false)
+	       E = prune spectralSequence K
+	       E^0
+	       E^0 .dd
+	       E^0
+	       E^1
+	       E^0 .dd_{1,0}
+	       E^1 .dd
+	       E^1
+	       E^0
+	       E^2
+	       prune HH K_infinity
+    	       E^infinity
+///
+
+-- We might want to not include this next example
+-- But it is super easy so there is no harm to included it (as we have done in the past)
+doc ///
+     Key
+     	  "Example 3"
+     Headline
+     	  Easy example of a filtered simplicial complex
+     Description
+     	  Text
+	       We provide an easy example of a filtered simplicial complex
+	       and the resulting spectral sequence.  This example is small enough that
+	       all aspects of it can be explicitly computed by hand.	       
+     	  Example
+	       A = QQ[a,b,c]
+	       D = simplicialComplex {a*b*c}
+	       F2D = D
+	       F1D = simplicialComplex {a*b,a*c,b*c}
+	       F0D = simplicialComplex {a,b,c}
+	       K = filteredComplex({F2D,F1D,F0D}, ReducedHomology => false)
+	       C = K_infinity    	     
+	       E = prune spectralSequence K
+	       E^0
+	       E^0 .dd	   
+	       E^1
+	       E^1 .dd
+	       E^2
+	       E^2 .dd
+	       E^infinity
+	       prune HH K_infinity
+///
+
+
 end
 
 
@@ -3980,88 +4045,27 @@ doc ///
      	  "maps between chain complexes"
 ///
  
-
-
------------------------------------------------------------
-
--- I think the only remaining items to check/update aside from the documentation is below 
-
------------------------------------------------------------
-
-   
-
-
-
-
-
-
-
--- We might want to not include this next example
-doc ///
-     Key
-     	  "Example 2"
-     Headline
-     	  Easy example of a filtered simplicial complex
-     Description
-     	  Text
-	       We provide an easy example of a filtered simplicial complex and
-	       the resulting spectral sequence.  This example is small enough that
-	       all aspects of it can be explicitly computed by hand.
-	  Example
-	       A = QQ[a,b,c];
-	       D = simplicialComplex({a*b*c})
-	       F3D = D;
-	       F2D = simplicialComplex({a*b,a*c,b*c})
-	       F1D = simplicialComplex({a*b,c})
-	       F0D = simplicialComplex({a,b})
-	       K = filteredComplex({F3D,F2D,F1D,F0D}, ReducedHomology => false)
-	       E = prune spectralSequence K
-	       E^0
-	       E^0 .dd
-	       E^0
-	       E^1
-	       E^0 .dd_{1,0}
-	       E^1 .dd
-	       E^1
-	       E^0
-	       E^2
-	       prune HH K_infinity
-    	       E^infinity
-///
-
--- We might want to not include this next example
--- But it is super easy so there is no harm to included it (as we have done in the past)
-doc ///
-     Key
-     	  "Example 3"
-     Headline
-     	  Easy example of a filtered simplicial complex
-     Description
-     	  Text
-	       We provide an easy example of a filtered simplicial complex
-	       and the resulting spectral sequence.  This example is small enough that
-	       all aspects of it can be explicitly computed by hand.	       
-     	  Example
-	       A = QQ[a,b,c]
-	       D = simplicialComplex {a*b*c}
-	       F2D = D
-	       F1D = simplicialComplex {a*b,a*c,b*c}
-	       F0D = simplicialComplex {a,b,c}
-	       K = filteredComplex({F2D,F1D,F0D}, ReducedHomology => false)
-	       C = K_infinity    	     
-	       E = prune spectralSequence K
-	       E^0
-	       E^0 .dd	   
-	       E^1
-	       E^1 .dd
-	       E^2
-	       E^2 .dd
-	       E^infinity
-	       prune HH K_infinity
-///	       
----- some trouble examples
+	       
+---- Another "trouble example"
 ---- these all run correctly in "SpectralSequences.m2"
 ---- can these be updated/fixed in an obvious way?
+
+--- Is the "issue here" the pushFwd method?
+
+---- I.e., we need to update the following method -----
+
+
+-- the following relies on the pushFwd method from the package "PushForward.m2"
+
+pushFwd(RingMap,ChainComplex):=o->(f,C) ->
+(    pushFwdC := chainComplex(source f);
+     maps := apply(spots C, i-> (i,pushFwd(f,C.dd_i)));
+     for i from min C to max C do (
+	 pushFwdC.dd_(maps#i_0) = maps#i_1 
+	 );
+    pushFwdC
+    )
+
 
 
 doc ///
@@ -4083,6 +4087,7 @@ doc ///
 	       N = coker vars S;
 	       M = coker vars R --;
 	       F := complex complete res N;
+	       --- this is where the error message arises ---
 	       pushFwdF := pushFwd(f,F);
 	       G := commplex complete res M;
 	       E := spectralSequence(filteredComplex(G) ** pushFwdF);
