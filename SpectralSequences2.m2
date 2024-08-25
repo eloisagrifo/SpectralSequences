@@ -17,9 +17,9 @@
 --------------------------------------------------------------------------------
 --- This is a provisional package that is not intended to replace the existing
 --- SpectralSequences.m2.  We are working here to make SpectralSequences.m2 forward
--- compatible with the changes to the ChainComplex type and its eventual replacement
--- by the Complexes type which is currently been developed by Mike and Greg.
---  All of the existing methods etc., from work correctly as advertised and
+-- compatible with the changes to the ChainComplex type and its intended eventual replacement
+-- by the Complexes type which is currently being developed by Mike and Greg.
+--  All of the existing methods and examples, from SpectralSequences.2 work correctly as advertised and
 -- so we need to ensure that this remains the case with the migration to the Complexes
 -- framework as well.  Some older "legacy" and other "patch" code has been removed
 -- while other methods have been optimized and/or required other forms of syntax
