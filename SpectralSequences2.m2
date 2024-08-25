@@ -654,6 +654,27 @@ minimalPresentation SpectralSequence := prune SpectralSequence := SpectralSequen
 	  spectralSequence(E.filteredComplex, Prune => true)
 	  )
 
+
+
+edgeComplex = method()
+
+edgeComplex(SpectralSequence) := (E) -> (
+       if E.Prune == true then error "not currently implemented for pruned spectral sequences";
+   if E.Prune == true then error "not currently implemented for pruned spectral sequences";
+    M := select(spots E^2 .dd, i -> E^2_i != 0);
+    l := min apply(M, i -> i#0);
+    m := min apply(M, i -> i#1);
+    C := chainComplex E; -- we still haven't overloaded complex; but this still returns a complex 
+    if M != {} then (
+    complex {inducedMap(E^2_{l + 1, m}, HH_(l + m + 1) C, id_(C_(l + m + 1))),
+    inducedMap(HH_(l + m + 1) C, E^2_{l,m + 1}, id_(C_(l + m + 1))), 
+    E^2 .dd_{l + 2,m}, inducedMap(E^2_{l + 2, m}, HH_(l + m + 2) C, id_(C_(l + m + 2)))})
+    else
+    (c := complex hashTable {}; c.ring = C.ring;
+    c)
+    )
+      
+
 ----------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -3663,148 +3684,6 @@ doc ///
 	  Text
 	       Computes the associated graded homology object determined by the filtered chain complex
 ///	       
-  	  
-end
-
-
-
---the end--
-
-
----
--- Scratch Code Testing --
-
--- the "to do list" follows this test example 
-
----  This is extracted from the documentation to see what work is needed ---
-
-restart
-uninstallPackage"SpectralSequences2"
-installPackage"SpectralSequences2"
-installPackage("SpectralSequences2", RemakeAllDocumentation => true)
-
-
----
-
-----   To do list ---
-
-----  Next item on the to do list -----
-
--- It seems that all filtered complex contstructors are now implemented correctly
--- The next step is to Rebuild the documentation for the updated methods above (this should be easy)
-
----- There were some issues with some of the topology examples that I couldn't figure out, so I skipped those.
-			----  If the updates to the code are implemented correctly, all of these examples should work.
-                        ----  I created many of those examples before I created the many other commutative algebra examples
-                        ----  that came afterwards
-----  We should run a spell checker etc. through the examples everywhere
--- isChainComplexMap was replaced with isWellDefined 
-                       ------   Yes.
--- Do we want to remove or truncate(C, n) function since we will instead use naiveTrunction(C, 1, infinity)?
-                       -----  Yes, this "patch code" can now be replaced with the function naiveTrunction(C, 1, infinity) from the
-                       ----- complexes package
--- in some of the documentation we have "needsPackage SpectralSequences".  I've updated this to needsPackage SpectralSequences2 just so we're consistent.  We need to change this later. 
-                     ----- Yes.  This is good.
-
-
-
------ 
-
-----  Here is the next "trouble spot in the example code"
-
-               R = ZZ/101[a_0..b_1, Degrees=>{2:{1,0},2:{0,1}}]; -- PP^1 x PP^1
-		M = intersect(ideal(a_0,a_1),ideal(b_0,b_1)) ; -- irrelevant ideal
-		M = M_*/(x -> x^5)//ideal ; -- Suitably high Frobenius power of M
-		G = complex res image gens M 
-		I = ideal random(R^1, R^{{-3,-3}}) -- ideal of C
-	        b = complex chainComplex gradedModule R^{{1,0}} -- make line bundle a chain complex
-		a = complex chainComplex gradedModule R^{{-2,-3}}
-		-- make the map OO(-2, -3) --> OO(1,0)     
-		f = chainComplexMap(b, a,{random(R^1, R^{{-3,-3}})}) ; 
----  how can the above made to work with "Complexes?  note that b and a have now been converted to 
--- complexes .... so this construction of f now needs to be updated ..... 
-		K = filteredComplex ({Hom(G,f)}) ; -- the two step filtered complex we want
-		E = prune spectralSequence K ;
-
----  for example, using "ChainComplexes" as in "SpectralSequences"
---- everything that follows runs corectly
-
-                R = ZZ/101[a_0..b_1, Degrees=>{2:{1,0},2:{0,1}}]; -- PP^1 x PP^1
-		M = intersect(ideal(a_0,a_1),ideal(b_0,b_1)) ; -- irrelevant ideal
-		M = M_*/(x -> x^5)//ideal ; -- Suitably high Frobenius power of M
-		G = res image gens M ;
-		I = ideal random(R^1, R^{{-3,-3}}) -- ideal of C
-	        b = chainComplex gradedModule R^{{1,0}} -- make line bundle a chain complex
-		a = chainComplex gradedModule R^{{-2,-3}}
-		-- make the map OO(-2, -3) --> OO(1,0)     
-		f = chainComplexMap(b, a,{random(R^1, R^{{-3,-3}})}) ;
-       		Hom(G,f)
-
---- Here is a possible "fix" however, when trying to calculate E^1 it seems that it is already too complicated --- 
-
-                R = ZZ/101[a_0..b_1, Degrees=>{2:{1,0},2:{0,1}}] -- PP^1 x PP^1
-		M = intersect(ideal(a_0,a_1),ideal(b_0,b_1))  -- irrelevant ideal
-		M = M_*/(x -> x^5)//ideal  -- Suitably high Frobenius power of M
-		G = complex res image gens M 
-		I = ideal random(R^1, R^{{-3,-3}}) -- ideal of C -- but we don't use this in what follows
-	        b = complex R^{{1,0}} -- make line bundle a chain complex
-		a = complex R^{{-2,-3}}
-		-- make the map OO(-2, -3) --> OO(1,0)     
-		f = randomComplexMap(b, a, Degree => 0) 
-		K = filteredComplex ({Hom(G,f)})  -- the two step filtered complex we want
-		E = prune spectralSequence K;
-		E^0;
-                E^1;
-                E^1 .dd_{1,-2}; -- the connecting map HH^1(C, OO_C(1,0)) --> HH^2(X, OO_X(-2,-3)) 
-
- 
-
-
------------------------------------------------------------
-
--- I think the only remaining items to check/update aside from the documentation is below 
-
------------------------------------------------------------
-
-edgeComplex = method()
-
-edgeComplex(SpectralSequence) := (E) -> (
-    if E.Prune == true then error "not currently implemented for pruned spectral sequences";
-   if E.Prune == true then error "not currently implemented for pruned spectral sequences";
-    M := select(spots E^2 .dd, i -> E^2_i != 0);
-    l := min apply(M, i -> i#0);
-    m := min apply(M, i -> i#1);
-    C := complex E;
-    if M != {} then (
-    complex {inducedMap(E^2_{l + 1, m}, HH_(l + m + 1) C, id_(C_(l + m + 1))),
-    inducedMap(HH_(l + m + 1) C, E^2_{l,m + 1}, id_(C_(l + m + 1))), 
-    E^2 .dd_{l + 2,m}, inducedMap(E^2_{l + 2, m}, HH_(l + m + 2) C, id_(C_(l + m + 2)))})
-    else
-    (c := new Complex; c.ring = E.filteredComplex _infinity .ring;
-    c)
-    )
-
-
-
---- we are removing truncate, so it is commented out
-
---doc ///
---    	  Key
---	    (truncate, ChainComplex, ZZ)
---	  Headline 
---	    compute the hard truncation of a chain complex   
---     Description
---     	  Text
---	       Computes the hard truncation of a chain complex as a specified homological degree.
---	  Example
---	       B = QQ[a..d];
---	       C = commplex koszul vars B
---	       truncate(C,1)
---	       truncate(C,-1)
---	       truncate(C,-10)
---	       truncate(C,10)     	    
--- ///	      
-   
 
 doc ///
      Key
@@ -3923,7 +3802,106 @@ doc ///
 	  The method currently does not support pruned spectral sequences.
 ///
 
+doc ///
+     Key
+       "Spectral sequences and connecting morphisms"
+     Description
+     	  Text
+	       If $0 \rightarrow A \rightarrow B \rightarrow C \rightarrow 0$ is a 
+	       short exact sequence of chain complexes then the connecting morphism
+	       $H_i(C) \rightarrow H_{i - 1}(A)$ can realized as a suitable map
+	       on the $E^1$ of a spectral sequence determined by a suitably defined
+	       two step filtration of $B$.
+	       
+	       Here we illustrate this realization in a concrete situation:  we
+	       compute the connecting morphism $H^i(X, F) \rightarrow H^{i + 1}(X, G)$
+	       arising from a short exact sequence 
+	       $0 \rightarrow G \rightarrow H \rightarrow F \rightarrow 0$ of sheaves
+	       on a smooth toric variety $X$.
+	       
+ 	       More specifically we let $X = \mathbb{P}^1 \times \mathbb{P}^1$ and use multigraded commutative algebra
+	       together with spectral sequences to compute the connecting
+	       morphism $H^1(C, OO_C(1,0)) \rightarrow H^2(X, OO_X(-2,-3))$ where 
+	       $C$ is a general divisor of type $(3,3)$ on $X$.  This connecting morphism is an
+	       isomorphism. 
+	  Example   
+                R = ZZ/101[a_0..b_1, Degrees=>{2:{1,0},2:{0,1}}] -- PP^1 x PP^1
+		M = intersect(ideal(a_0,a_1),ideal(b_0,b_1))  -- irrelevant ideal
+		M = M_*/(x -> x^5)//ideal  -- Suitably high Frobenius power of M
+		G = complex res image gens M 
+		I = ideal random(R^1, R^{{-3,-3}}) -- ideal of C -- but we don't use this in what follows
+	        B = complex R^{{1,0}} -- make line bundle a chain complex
+		A = complex R^{{-2,-3}}
+		-- make the map OO(-2, -3) --> OO(1,0)     
+		f = randomComplexMap(B, A, Degree => 0) 
+		K = filteredComplex ({Hom(G,f)})  -- the two step filtered complex we want
+		E = prune spectralSequence K;
+    	  Text
+	       The degree zero piece of the map $E^1 .dd_{1, -2}$ below is the desired connecting 
+	       morphism $H^1(C, OO_C(1,0)) \rightarrow H^2(X, OO_X(-2,-3))$.
+	  Example     
+		E^1 .dd_{1,-2} -- the connecting map HH^1(C, OO_C(1,0)) --> HH^2(X, OO_X(-2,-3)) 
+		basis({0,0}, image E^1 .dd_{1,-2})  -- image 2-dimensional
+		basis({0,0}, ker E^1 .dd_{1,-2}) -- map is injective
+		basis({0,0}, target E^1 .dd_{1,-2}) -- target 2-dimensional 
+		basis({0,0}, source E^1 .dd_{1,-2}) -- source 2 dimensional 
+	  Text
+	       An alternative way to compute the connecting morphism is 
+	  Example
+	      	prune connectingMorphism(Hom(G, f), - 2) ;
+		prune connectingMorphism(Hom(G, f), - 2) == E^1 .dd_{1, -2} 
+     
+///
 
+
+
+end
+
+
+
+--the end--
+
+
+---
+-- Scratch Code Testing --
+
+-- the "to do list" follows this test example 
+
+---  This is extracted from the documentation to see what work is needed ---
+
+restart
+uninstallPackage"SpectralSequences2"
+installPackage"SpectralSequences2"
+installPackage("SpectralSequences2", RemakeAllDocumentation => true)
+
+
+---
+
+----   To do list ---
+
+----  Next item on the to do list -----
+
+-- It seems that all filtered complex contstructors are now implemented correctly
+-- The next step is to Rebuild the documentation for the updated methods above (this should be easy)
+
+---- There were some issues with some of the topology examples that I couldn't figure out, so I skipped those.
+			----  If the updates to the code are implemented correctly, all of these examples should work.
+                        ----  I created many of those examples before I created the many other commutative algebra examples
+                        ----  that came afterwards
+----  We should run a spell checker etc. through the examples everywhere
+-- isChainComplexMap was replaced with isWellDefined 
+                       ------   Yes.
+-- Do we want to remove or truncate(C, n) function since we will instead use naiveTrunction(C, 1, infinity)?
+                       -----  Yes, this "patch code" can now be replaced with the function naiveTrunction(C, 1, infinity) from the
+                       ----- complexes package
+-- in some of the documentation we have "needsPackage SpectralSequences".  I've updated this to needsPackage SpectralSequences2 just so we're consistent.  We need to change this later. 
+                     ----- Yes.  This is good.
+
+
+
+----- 
+
+----  Here is the next "trouble spot in the example code"
 doc ///
      Key 
       (filteredComplex, List)
@@ -3969,6 +3947,7 @@ doc ///
                E_2 = image matrix(R,{{0}})
 	       E_1 = image matrix(R,{{1,0},{0,0}})
 	       E_0 = image matrix(R,{{1}})
+	       ----  for some reason we seem to get an error message here ----
 	       E = complex ({inducedMap(E_0,E_1,C.dd_1),inducedMap(E_1,E_2,C.dd_2)})
      	  Text
 	       Now make a chain complex map.
@@ -4000,6 +3979,19 @@ doc ///
      SeeAlso
      	  "maps between chain complexes"
 ///
+ 
+
+
+-----------------------------------------------------------
+
+-- I think the only remaining items to check/update aside from the documentation is below 
+
+-----------------------------------------------------------
+
+   
+
+
+
 
 
 
@@ -4071,56 +4063,6 @@ doc ///
 ---- these all run correctly in "SpectralSequences.m2"
 ---- can these be updated/fixed in an obvious way?
 
-doc ///
-     Key
-       "Spectral sequences and connecting morphisms"
-     Description
-     	  Text
-	       If $0 \rightarrow A \rightarrow B \rightarrow C \rightarrow 0$ is a 
-	       short exact sequence of chain complexes then the connecting morphism
-	       $H_i(C) \rightarrow H_{i - 1}(A)$ can realized as a suitable map
-	       on the $E^1$ of a spectral sequence determined by a suitably defined
-	       two step filtration of $B$.
-	       
-	       Here we illustrate this realization in a concrete situation:  we
-	       compute the connecting morphism $H^i(X, F) \rightarrow H^{i + 1}(X, G)$
-	       arising from a short exact sequence 
-	       $0 \rightarrow G \rightarrow H \rightarrow F \rightarrow 0$ of sheaves
-	       on a smooth toric variety $X$.
-	       
- 	       More specifically we let $X = \mathbb{P}^1 \times \mathbb{P}^1$ and use multigraded commutative algebra
-	       together with spectral sequences to compute the connecting
-	       morphism $H^1(C, OO_C(1,0)) \rightarrow H^2(X, OO_X(-2,-3))$ where 
-	       $C$ is a general divisor of type $(3,3)$ on $X$.  This connecting morphism is an
-	       isomorphism. 
-	  Example   
-                R = ZZ/101[a_0..b_1, Degrees=>{2:{1,0},2:{0,1}}]; -- PP^1 x PP^1
-		M = intersect(ideal(a_0,a_1),ideal(b_0,b_1)) ; -- irrelevant ideal
-		M = M_*/(x -> x^5)//ideal ; -- Suitably high Frobenius power of M
-		G = res image gens M ;
-		I = ideal random(R^1, R^{{-3,-3}}) -- ideal of C
-	        b = chainComplex gradedModule R^{{1,0}} -- make line bundle a chain complex
-		a = chainComplex gradedModule R^{{-2,-3}}
-		-- make the map OO(-2, -3) --> OO(1,0)     
-		f = chainComplexMap(b, a,{random(R^1, R^{{-3,-3}})}) ; 
-		K = filteredComplex ({Hom(G,f)}) ; -- the two step filtered complex we want
-		E = prune spectralSequence K ;
-    	  Text
-	       The degree zero piece of the map $E^1 .dd_{1, -2}$ below is the desired connecting 
-	       morphism $H^1(C, OO_C(1,0)) \rightarrow H^2(X, OO_X(-2,-3))$.
-	  Example     
-		E^1 .dd_{1,-2} -- the connecting map HH^1(C, OO_C(1,0)) --> HH^2(X, OO_X(-2,-3)) 
-		basis({0,0}, image E^1 .dd_{1,-2})  -- image 2-dimensional
-		basis({0,0}, ker E^1 .dd_{1,-2}) -- map is injective
-		basis({0,0}, target E^1 .dd_{1,-2}) -- target 2-dimensional 
-		basis({0,0}, source E^1 .dd_{1,-2}) -- source 2 dimensional 
-	  Text
-	       An alternative way to compute the connecting morphism is 
-	  Example
-	      	prune connectingMorphism(Hom(G, f), - 2) ;
-		prune connectingMorphism(Hom(G, f), - 2) == E^1 .dd_{1, -2} 
-     
-///
 
 doc ///
      Key
