@@ -3740,6 +3740,23 @@ installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 		f = chainComplexMap(b, a,{random(R^1, R^{{-3,-3}})}) ;
        		Hom(G,f)
 
+--- Here is a possible "fix" however, when trying to calculate E^1 it seems that it is already too complicated --- 
+
+                R = ZZ/101[a_0..b_1, Degrees=>{2:{1,0},2:{0,1}}] -- PP^1 x PP^1
+		M = intersect(ideal(a_0,a_1),ideal(b_0,b_1))  -- irrelevant ideal
+		M = M_*/(x -> x^5)//ideal  -- Suitably high Frobenius power of M
+		G = complex res image gens M 
+		I = ideal random(R^1, R^{{-3,-3}}) -- ideal of C -- but we don't use this in what follows
+	        b = complex R^{{1,0}} -- make line bundle a chain complex
+		a = complex R^{{-2,-3}}
+		-- make the map OO(-2, -3) --> OO(1,0)     
+		f = randomComplexMap(b, a, Degree => 0) 
+		K = filteredComplex ({Hom(G,f)})  -- the two step filtered complex we want
+		E = prune spectralSequence K;
+		E^0;
+                E^1;
+                E^1 .dd_{1,-2}; -- the connecting map HH^1(C, OO_C(1,0)) --> HH^2(X, OO_X(-2,-3)) 
+
  
 
 
