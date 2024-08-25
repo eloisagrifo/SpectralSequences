@@ -3919,6 +3919,84 @@ doc ///
 	       prune HH K_infinity
 ///
 
+doc ///
+     Key 
+      (filteredComplex, List)
+     Headline 
+      obtain a filtered complex from a list of chain complex maps or a nested list of simplicial complexes
+     Usage 
+       K = filteredComplex L 
+     Inputs 
+	  L: List
+	  ReducedHomology => Boolean
+	  Shift => ZZ
+     Outputs 
+       K: FilteredComplex
+     Description
+      	  Text  
+       	    We can make a filtered complex from a list of chain complex maps as follows.
+	    We first need to load the relevant packages.
+          Example
+	       needsPackage "SpectralSequences2"	    
+     	  Text
+	       We then make a chain complex.
+     	  Example	       	 
+	       R = QQ[x,y,z,w]
+	       d2 = matrix(R,{{1},{0}})
+	       d1 = matrix(R,{{0,1}})
+	       C = complex ({d1,d2}) 
+	  Text
+	      We now make the modules of the another chain complex which we will label D.
+	  Example      
+	       D2 = image matrix(R,{{1}})
+	       D1 = image matrix(R,{{1,0},{0,0}})
+	       D0 = image matrix(R,{{1}})
+	       D = complex({inducedMap(D0,D1,C.dd_1),inducedMap(D1,D2,C.dd_2)})
+     	  Text
+	       Now make a chain complex map.
+     	  Example	       	     
+	     --  d = map(C,D,apply(spots C, i-> inducedMap(C_i,D_i,id_C _i)))
+	       d = map(C,D,{inducedMap(C_0,D0,id_(C_0)),inducedMap(C_1,D1,id_(C_1)),inducedMap(C_2,D2,id_(C_2))})
+	       isWellDefined d
+     	  Text
+	       We now make the modules of another chain complex which we will label E.	     
+     	  Example	      
+               E2 = image matrix(R,{{0}})
+	       E1 = image matrix(R,{{1,0},{0,0}})
+	       E0 = image matrix(R,{{1}})
+	       E = complex ({inducedMap(E0,E1,C.dd_1),inducedMap(E1,E2,C.dd_2)})
+     	  Text
+	       Now make a chain complex map.
+     	  Example	      	       
+	       e = map(C,E,{inducedMap(C_0,E0,id_(C_0)),inducedMap(C_1,E1,id_(C_1)),inducedMap(C_2,E_2,id_(C_2))})
+               isWellDefined e
+     	  Text 
+	       Now make a filtered complex from a list of chain complex maps.
+     	  Example	       	       
+	       K = filteredComplex({d,e})
+	  Text
+	     We can make a filtered complex, with a specified minimum filtration degree
+             from a list of ChainComplexMaps by using the Shift option.
+      	  Example	       	     
+	       L = filteredComplex({d,e},Shift => 1)
+	       M = filteredComplex({d,e},Shift => -1)	      	    
+	  Text
+	    We can make a filtered complex from a nested list of simplicial 
+     	    complexes as follows
+     	  Example	     
+	      D = simplicialComplex {x*y*z, x*y, y*z, w*z}
+	      E = simplicialComplex {x*y, w}
+	      F = simplicialComplex {x,w}
+	      K = filteredComplex{D,E,F}
+	  Text
+     	     If we want the resulting complexes to correspond to the non-reduced homology
+     	     of the simplicial complexes we can do the following.
+     	  Example 
+	     filteredComplex({D,E,F}, ReducedHomology => false)
+     SeeAlso
+     	  "maps between chain complexes"
+///
+ 
 
 end
 
@@ -3967,87 +4045,7 @@ installPackage("SpectralSequences2", RemakeAllDocumentation => true)
 ----- 
 
 ----  Here is the next "trouble spot in the example code"
-doc ///
-     Key 
-      (filteredComplex, List)
-     Headline 
-      obtain a filtered complex from a list of chain complex maps or a nested list of simplicial complexes
-     Usage 
-       K = filteredComplex L 
-     Inputs 
-	  L: List
-	  ReducedHomology => Boolean
-	  Shift => ZZ
-     Outputs 
-       K: FilteredComplex
-     Description
-      	  Text  
-       	    We can make a filtered complex from a list of chain complex maps as follows.
-	    We first need to load the relevant packages.
-          Example
-	       needsPackage "SpectralSequences2"	    
-     	  Text
-	       We then make a chain complex.
-     	  Example	       	 
-	       R = QQ[x,y,z,w]
-	       d2 = matrix(R,{{1},{0}})
-	       d1 = matrix(R,{{0,1}})
-	       C = complex ({d1,d2}) 
-	  Text
-	      We now make the modules of the another chain complex which we will label D.
-	  Example      
-	       D_2 = image matrix(R,{{1}})
-	       D_1 = image matrix(R,{{1,0},{0,0}})
-	       D_0 = image matrix(R,{{1}})
-	       D = complex({inducedMap(D_0,D_1,C.dd_1),inducedMap(D_1,D_2,C.dd_2)})
-     	  Text
-	       Now make a chain complex map.
-     	  Example	       	     
-	       d = map(C,D,apply(spots C, i-> inducedMap(C_i,D_i,id_C _i)))
-	       isWellDefined d
-	       d == map(C,D,{inducedMap(C_0,D_0,id_(C_0)),inducedMap(C_1,D_1,id_(C_1)),inducedMap(C_2,D_2,id_(C_2))})
-     	  Text
-	       We now make the modules of another chain complex which we will label E.	     
-     	  Example	      
-               E_2 = image matrix(R,{{0}})
-	       E_1 = image matrix(R,{{1,0},{0,0}})
-	       E_0 = image matrix(R,{{1}})
-	       ----  for some reason we seem to get an error message here ----
-	       E = complex ({inducedMap(E_0,E_1,C.dd_1),inducedMap(E_1,E_2,C.dd_2)})
-     	  Text
-	       Now make a chain complex map.
-     	  Example	      	       
-	       e = map(C,E,apply(spots C, i->inducedMap(C_i,D_i, id_C _i)))
-     	  Text 
-	       Now make a filtered complex from a list of chain complex maps.
-     	  Example	       	       
-	       K = filteredComplex({d,e})
-	  Text
-	     We can make a filtered complex, with a specified minimum filtration degree
-             from a list of ChainComplexMaps by using the Shift option.
-      	  Example	       	     
-	       L = filteredComplex({d,e},Shift => 1)
-	       M = filteredComplex({d,e},Shift => -1)	      	    
-	  Text
-	    We can make a filtered complex from a nested list of simplicial 
-     	    complexes as follows
-     	  Example	     
-	      D = simplicialComplex {x*y*z, x*y, y*z, w*z}
-	      E = simplicialComplex {x*y, w}
-	      F = simplicialComplex {x,w}
-	      K = filteredComplex{D,E,F}
-	  Text
-     	     If we want the resulting complexes to correspond to the non-reduced homology
-     	     of the simplicial complexes we can do the following.
-     	  Example 
-	     filteredComplex({D,E,F}, ReducedHomology => false)
-     SeeAlso
-     	  "maps between chain complexes"
-///
- 
-	       
----- Another "trouble example"
----- these all run correctly in "SpectralSequences.m2"
+---- this runs correctly in "SpectralSequences.m2"
 ---- can these be updated/fixed in an obvious way?
 
 --- Is the "issue here" the pushFwd method?
