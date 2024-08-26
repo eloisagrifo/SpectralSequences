@@ -24,6 +24,9 @@
 -- framework as well.  Some older "legacy" and other "patch" code has been removed
 -- while other methods have been optimized and/or required other forms of syntax
 -- and/or type changes.
+-- A "find and replace" "SpectralSequences2" => "SpectralSequences" and chaning the file name
+-- "SpectralSequences2.m2" => "SpectralSequences.m2" hopefully is all that is needed
+-- to have this provisional package converted back to "SpectralSequences".
 -------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 newPackage(
@@ -4041,51 +4044,62 @@ doc ///
 	       ee^0
      SeeAlso
 	    "Filtrations and tensor product complexes"	    
- 	  	  
 ///
 
-end
+doc ///
+     Key 
+          (filteredComplex, SpectralSequence)
+     Headline 
+         obtain the filtered complex associated to the spectral sequence
+     Usage 
+         K = filteredComplex E 
+     Inputs 
+	  E: SpectralSequence
+-- these options don't do anything for this constructor.
+	  ReducedHomology => Boolean	       	  	    
+	  Shift => ZZ
+     Outputs
+          K: FilteredComplex
+     Description	  
+     	  Text
+	     Produces the filtered complex which determined the spectral sequence.
+	     Consider the spectral sequence $E$ which arises from a nested list of simplicial
+	     complexes.
+	  Example 
+	    A = QQ[a,b,c,d];
+	    D = simplicialComplex {a*d*c, a*b, a*c, b*c};
+	    F2D = D;
+	    F1D = simplicialComplex {a*c, d};
+	    F0D = simplicialComplex {a,d};
+	    K = filteredComplex {F2D, F1D, F0D};
+	    E = spectralSequence(K) ;
+	  Text
+	    The underlying filtered chain complex 
+	    can be recovered from the
+	    spectral sequence by:
+	  Example     
+    	    C = filteredComplex E 
+     SeeAlso
+          --(_, FilteredComplex,InfiniteNumber)
+          --(^,FilteredComplex,InfiniteNumber)
 
 
-
---the end--
-
-
----
--- Scratch Code Testing --
-
--- the "to do list" follows this test example 
-
----  This is extracted from the documentation to see what work is needed ---
-
-restart
-uninstallPackage"SpectralSequences2"
-installPackage"SpectralSequences2"
-installPackage("SpectralSequences2", RemakeAllDocumentation => true)
-
-
----
-
-----   To do list ---
-
------  Verify that all of the "tests" work as intended -----
-
-
+	    
+///
 
 TEST ///
 restart;
-needsPackage "SpectralSequences";
+needsPackage "SpectralSequences2";
 A = QQ[a,b,c];
-C = new ChainComplex;
-C.ring = A;
+C = complex(A^0);
 K = filteredComplex C;
-assert(K_0 == C);
-assert(K_1 == C);
+assert(K_0 == C)
+assert(K_1 == C)
 ///    
 
 TEST ///
 restart;
-needsPackage "SpectralSequences";
+needsPackage "SpectralSequences2";
 A = QQ[a,b,c];
 D = simplicialComplex {a*b*c};
 F2D = D;
@@ -4110,7 +4124,7 @@ assert(all(keys support e^5, j -> isIsomorphism homologyIsomorphism(e,j#0,j#1,5)
 
 TEST ///
 restart
-needsPackage "SpectralSequences";
+needsPackage "SpectralSequences2";
 -- The following example is taken from p. 127, Fig 7.2 of 
 -- Zomorodian's "Topology for computing"
 A = ZZ [s,t,u,v,w] ;
@@ -4166,7 +4180,7 @@ assert(all(keys support e^12, j -> isIsomorphism homologyIsomorphism(e,j#0,j#1,1
 
 TEST ///
 restart
-needsPackage "SpectralSequences";
+needsPackage "SpectralSequences2";
 A = QQ[a,b,c,d];
 D = simplicialComplex {a*d*c, a*b, a*c, b*c};
 F2D = D;
@@ -4205,10 +4219,10 @@ assert(all(keys support e^12, j -> isIsomorphism homologyIsomorphism(e,j#0,j#1,1
 
 TEST ///
 restart
-needsPackage "SpectralSequences";
+needsPackage "SpectralSequences2";
 B = QQ[a..d];
 J = ideal vars B;
-C = compex complete res monomialCurveIdeal(B,{1,3,4});
+C = complex res monomialCurveIdeal(B,{1,3,4});
 K = filteredComplex(J,C,4);
 e = prune spectralSequence K;
 assert(all(keys support e^0, j -> isIsomorphism homologyIsomorphism(e,j#0,j#1,0)))
@@ -4221,14 +4235,14 @@ assert(all(keys support e^4, j -> isIsomorphism homologyIsomorphism(e,j#0,j#1,4)
 
 TEST ///
 restart
-needsPackage "SpectralSequences";
+needsPackage "SpectralSequences2";
 S = ZZ/101[x,y];
 I = ideal(x^2,x*y,y^2);
 R = S/I;
 kR = coker vars R;
 kS = coker vars S;
-CS = res kS;
-CR = res(kR,LengthLimit=>6);
+CS = complex res kS;
+CR = complex res(kR,LengthLimit=>6);
 CS' = CS**R;
 E = prune spectralSequence (CS' ** filteredComplex CR);
 assert(all(keys support E^0, j -> isIsomorphism homologyIsomorphism(E,j#0,j#1,0)))
@@ -4238,6 +4252,33 @@ assert(all(keys support E^3, j -> isIsomorphism homologyIsomorphism(E,j#0,j#1,3)
 assert(all(keys support E^4, j -> isIsomorphism homologyIsomorphism(E,j#0,j#1,4)))
 ///
 end
+
+
+
+
+--the end--
+
+
+---
+-- Scratch Code Testing --
+
+-- the "to do list" follows this test example 
+
+---  This is extracted from the documentation to see what work is needed ---
+
+restart
+uninstallPackage"SpectralSequences2"
+installPackage"SpectralSequences2"
+installPackage("SpectralSequences2", RemakeAllDocumentation => true)
+
+
+---
+
+----   To do list ---
+
+----  Run "spell check" through the documentation ----
+
+
 
 ---
 -- scratch code --
