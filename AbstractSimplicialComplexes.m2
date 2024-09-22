@@ -20,15 +20,16 @@
 newPackage(
     "AbstractSimplicialComplexes",
     Version => "0.1",
-    Date => "",
+    Date => "21 September 2024",
     Headline => "AbstractSimplicialComplexes",
     Authors => {{ Name => "Nathan Grieve", Email => "nathan.m.grieve@gmail.com", HomePage => "https://sites.google.com/view/nathan-grieve"}},
     AuxiliaryFiles => false,
-    DebuggingMode => false
+    DebuggingMode => false,
+    PackageImports => {"Complexes"}
     )
 
-export {"SimplicialSet", "simplicialSet","SimplicialChainComplex","simplicialChainComplex", "reducedSimplicialChainComplex", "ambientSimplicialSetSize",
-    "ambientSimplicialSet","inducedKFaceSimplicialChainComplexMap"}
+export {"SimplicialSet", "simplicialSet","simplicialChainComplex", "reducedSimplicialChainComplex", "ambientSimplicialSetSize",
+    "ambientSimplicialSet","inducedKFaceSimplicialChainComplexMap", "facets", "randomSimplicialSet", "spots", "randomSubset","randomSubSimplicialComplex", "simplicialChainComplex2", "reducedSimplicialChainComplex2"}
 
 -* Code section *-
 
@@ -39,6 +40,13 @@ export {"SimplicialSet", "simplicialSet","SimplicialChainComplex","simplicialCha
 -----------------------------------------
 
 spots = method()
+
+spots Complex := List => (
+  C -> (c := concentration C; toList(c_0 .. c_1)))
+
+max Complex := K -> max spots K
+min Complex := K -> min spots K
+
 
 ---------------------------------------
 --------------------------------------
@@ -63,15 +71,50 @@ new SimplicialSet := SimplicialSet =>(cl) -> (
     K := newClass(SimplicialSet, new HashTable); -- sigh
     K)
 
+---  It will be better to make some additional keys for this class ---
+---  For instance a key ambient, which will be an integer n which specifies the "ambient n-simplex on [n]"
+---  That we wish to view the SimplicalSet as being contained in ---
+---  This would be slightly different than the ambient size -- i.e., the smallest simplex that contains
+---  The given simplicial complex
+---  But actually how this is set-up should suffice ---
+---  We will also want to make a key "generators" which points to the list of generators used to define
+---  We would want to make ``maps" between SimplicalSets 
+
 spots SimplicialSet := List => (
   K -> sort select(keys K, i -> class i === ZZ))
 
+
+
+-- This returns the p-faces of a simplicial set 
 
 SimplicialSet _ ZZ := SimplicialSet => (K,p) -> (
   if K#?p then K#p 
   )
 
+-- given a list of subsets L and A \in L decide if A is maximal
 
+isMaximal :=(x,L) -> (
+myList := select(L,i -> isSubset(x,i));
+if #myList == 1 then
+return true
+else return false
+    )
+
+-- select the maximal subsets (i.e., facets) of a list of subsets
+
+listFacets := (L) -> (
+select(L,i-> isMaximal(i,L))
+    )
+
+
+--- return the facets of a simplicial set
+
+facets = method()
+
+facets(SimplicialSet) := List => K ->(
+    L := flatten(apply(spots K, i-> K_i));
+    return listFacets(L)
+    )
 
 --- Constructors for SimplicialSets
 
@@ -97,7 +140,7 @@ makeAllFaces := (L) -> (
     numberOfFaces := #L;
 --  find the highest dimensional face    
     n := max(apply(numberOfFaces, i-> # (L_i)));
-    flatten(for k from 0 to n list {k-1 => makeKFaces(L,k)})
+    flatten(for k from 0 to n list {k-1 => sort makeKFaces(L,k)})
     )
 
 
@@ -112,6 +155,51 @@ simplicialSet(ZZ) := SimplicialSet => (n) -> (
     return simplicialSet({L})
     )
 
+
+--
+
+-- making random simplicial sets --
+
+-- make a random subset of {1,...,n}
+
+randomSubset = method()
+
+randomSubset(ZZ) := List => (n) -> (
+   sort unique (for i from 1 to n list (random(1,n)))
+    )
+
+-- make a random subset of a give set
+
+
+randomSubset(List) := List => (L) -> (
+    n := #L;
+    k := random(0,n);
+    mySubset := subsets(L,k);
+    mySubset_(random(binomial(n,k)))
+    )
+
+
+-- The following will make a "random" simplicial complex on {1,...,n} --
+
+randomSimplicialSet = method()
+
+randomSimplicialSet(ZZ) := SimplicialSet => (n) -> (
+     listLength := 1 + random(2^n);
+     simplicialSet unique(for i from 1 to listLength list randomSubset(n))
+     )
+
+------
+
+randomSubSimplicialComplex = method()
+
+randomSubSimplicialComplex(SimplicialSet) := SimplicialSet => (K) -> (
+ L := facets K;
+ simplicialSet unique apply(L, i-> randomSubset(i))
+)
+
+---
+
+-- ambient simplicial set
 
 ambientSimplicialSetSize = method() -- return the size of the underyling ambient simplex
 
@@ -170,6 +258,9 @@ ambientSimplicialSet(SimplicialSet) := SimplicialSet => (K) -> (
 --partial := (L) -> ( 
  -- apply(0 .. (#L-1), i -> {(-1)^i, drop(L,{i,i})})
 
+
+----- there actually appears to be a bug in what follows  -------
+
  
 -- The following function seems useful to  
 -- useful to construct
@@ -191,6 +282,8 @@ return sign
 )
 
 
+----- there actually appears to be a bug in what follows -------
+
 -- make a constructor for making matrices
 -- that represented the simplicial boundary
 -- maps of a given simplical complex
@@ -201,63 +294,39 @@ simplicialMakeMatrix := (kPlusOneFaces,kFaces) -> (
     n := # kPlusOneFaces;
     m := # kFaces;
     matrixList := 
+    	for i from 0 to m-1 list (
     for j from 0 to n-1 list (
-	for i from 0 to m-1 list (
 	   isDLexSeqI((kFaces)#i,(kPlusOneFaces)#j))
 	);
     return matrix(matrixList)
 )
 
 
---
---
----  It seems sensible to make a new Type "SimplicialChainComplex" as a new type of ChainComplex ---
-
-SimplicialChainComplex = new Type of ChainComplex
-SimplicialChainComplex.synonym = "Simplicial Chain Complex"
-
-spots SimplicialChainComplex := List => (
-  K -> sort select(keys K, i -> class i === ZZ))
-
-
 --  We can finally make the entire reduced homology chain complex in the following way
 -- Given as input the simplcial complex represented as a simplicial set --
 --  This will produce the reduced chain complex (so the empty set will
 --  appear in the chain complex)
--- At present the scripted functor HH is not supported on the output of this method
--- However the homology modules can be determined via "homology(i,C)"
 
 reducedSimplicialChainComplex = method() -- return the chain complex (with contribution from the empty face) that is associated to a simplicial set (i.e., an abstract simplicial complex)
 
-reducedSimplicialChainComplex(SimplicialSet) := SimplicialChainComplex => (L) ->
+reducedSimplicialChainComplex(SimplicialSet) := Complex => (L) ->
 (
     n := max spots L;
-    C := new ChainComplex;
-    mapsList := reverse(for i from 0 to n list simplicialMakeMatrix(L#i,L#(i-1)));
-    for i from 0 to n do (
-    C.dd_(i) = mapsList_i;
-	);
-   C.dd_(-1) = map(ZZ^0,C_(-1),zero);
-    C.dd_(n+1) = map(C_n,ZZ^0,zero);  
-    return C
+    mapsList := for i from 0 to n list (i => simplicialMakeMatrix(L#i,L#(i-1)));
+    append(mapsList,-1 => map(ZZ^0,target(mapsList#0)#1,zero));
+    return complex hashTable mapsList
 	)
 
 simplicialChainComplex = method() --  return the non-reduced simplicial chain complex (i.e., the chain complex with no contribution from the empty face)
 
-simplicialChainComplex(SimplicialSet) := SimplicialChainComplex => (L) ->
+simplicialChainComplex(SimplicialSet) := Complex => (L) ->
 (
     n := max spots L;
-    C := new ChainComplex;
-    mapsList := reverse(for i from 0 to n list simplicialMakeMatrix(L#i,L#(i-1)));
-    for i from 1 to n do (
-    C.dd_(i) = mapsList_i;
-	);
-   C.dd_(0) = map(ZZ^0,C_(0),zero);
-    C.dd_(n+1) = map(C_n,ZZ^0,zero);  
-    return C
+    mapsList := for i from 1 to n list (i => simplicialMakeMatrix(L#i,L#(i-1)));
+    append(mapsList,map(ZZ^0,source simplicialMakeMatrix(L#0,L#(-1)),zero));
+    return complex hashTable mapsList
 	)
-
-    
+        
 ---  Another method that would be of interest,
 --  is given an inclusion (or more general a morphism)
 ---- of simplicial sets, then compute the induced chain complex morphism of SimplicialChainComplexes
@@ -274,6 +343,8 @@ simplicialChainComplex(SimplicialSet) := SimplicialChainComplex => (L) ->
 ---  Otherwise the method produces the appropriate matrix
 ---  That induces the corresponding inclusion map
 
+--- This seems to work on some examples but needs to be tested more
+
 inducedKFaceSimplicialChainComplexMap = method()
 
 inducedKFaceSimplicialChainComplexMap(ZZ,SimplicialSet,SimplicialSet) := (k,H,L) ->
@@ -289,6 +360,9 @@ myMatrixList := for i from 0 to m-1 list (
     );
 return matrix myMatrixList
 )
+
+
+
 
 -----
  
@@ -328,25 +402,39 @@ doc ///
 ///
 
 
-doc ///
-     Key
-     	  SimplicialChainComplex
-     Headline
-     	  the type of all simplicial chain complexes
-     Description
-     	  Text	  
-	     The type SimplicialChainComplex is a data type for working with the homological
-	     chain complexes that are obtained from those abstract
-	     simplicial complexes which have vertices supported on [n] = {1,...,n}.
---     Caveat
-
---    SeeAlso
-///
-
 
 --
 -- Functions and Commands
 --
+
+doc ///
+    Key
+         randomSimplicialSet
+	 (randomSimplicialSet,ZZ)
+    Headline
+          Create a random simplicial set
+    Description
+          Text
+	     Creates a random abstract simplicial complex with vertices supported on a subset of [n] = {1,...,n}
+          Example
+	     K = randomSimplicialSet(4)
+///
+
+doc ///
+    Key
+         randomSubSimplicialComplex
+	 (randomSubSimplicialComplex,SimplicialSet)
+    Headline
+          Create a random sub-simplicial set
+    Description
+          Text
+	     Creates a random sub-simplicial complex of a given simplicial complex
+          Example
+	     K = randomSimplicialSet(4)
+	     J = randomSubSimplicialComplex(K)
+///
+
+
 
 doc ///
      Key
@@ -356,7 +444,7 @@ doc ///
      	  the ambient simplex
      Description
      	  Text	  
-	     If an abstract simplicial complex has vertices supported on a subset of [n] = {1,...,n], and including n,
+	     If an abstract simplicial complex has vertices supported on a subset of [n] = {1,...,n}, and including n,
 	     then it seems useful to regard this simplicial complex as being a subsimplicial
 	     complex of the simplex on [n].  This method returns this simplex as
 	     the ambient simplical complex.
@@ -364,9 +452,6 @@ doc ///
 	       K = simplicialSet({{1,2},{3}})
 	       J = ambientSimplicialSet(K)
    
---     Caveat
-
---    SeeAlso
 ///
 
 
@@ -384,9 +469,6 @@ doc ///
 	  Example
 	       K = simplicialSet({{1,2},{3}})
 	       J = ambientSimplicialSetSize(K)
---     Caveat
-
---    SeeAlso
 ///
 
 doc ///
@@ -427,12 +509,6 @@ doc ///
           Example
 	       K = simplicialSet({{1,2,3},{2,4,9},{1,2,3,5,7,8},{3,4}})
 	       reducedSimplicialChainComplex(K)
-     Caveat
-          Text
-	     At the moment, the scripted homology functor is not supported and so
-	     the homology groups have to be calculated using
-	     the command homology(i,C).
---    SeeAlso
 ///
 
 
@@ -450,12 +526,6 @@ doc ///
 	  Example
 	       K = simplicialSet({{1,2,3},{1,4,5},{2,4,5,7}})
 	       C = simplicialChainComplex(K)
-     Caveat
-          Text
-	     At the moment, the scripted homology functor is not supported and so
-	     the homology groups have to be calculated using
-	     the command homology(i,C).
---    SeeAlso
 ///
 
 doc ///
@@ -478,10 +548,6 @@ doc ///
 	       simplicialSet({{1,2,3,4}})
 	       simplicialSet({{1,2,3,4}, {2,3,5},{1,5}})
 	       simplicialSet(4)
-	           
---     Caveat
-
---    SeeAlso
 ///
 
 
@@ -500,9 +566,6 @@ doc ///
 	       K_1
 	       K_0
 	       K_(-1)
---     Caveat
-
---    SeeAlso
 ///
 
 
@@ -516,11 +579,6 @@ TEST /// -* [insert short title for this test] *-
 end--
 
 -* Development section *-
-restart
-debug needsPackage "AbstractSimplicialComplexes"
-check "AbstractSimplicialComplexes"
-
-uninstallPackage "AbstractSimplicialComplexes"
 
 --
 --
@@ -528,12 +586,38 @@ uninstallPackage "AbstractSimplicialComplexes"
 restart
 uninstallPackage "AbstractSimplicialComplexes"
 installPackage("AbstractSimplicialComplexes", RemakeAllDocumentation => true)
-
+check "AbstractSimplicialComplexes"
 viewHelp
 
-loadPackage("AbstractSimplicialComplexes", Reload => true)
-
 --
 --
 
 
+-- Various testing --
+
+
+L = randomSimplicialSet(4)
+l = simplicialChainComplex L
+isWellDefined oo
+lRed = reducedSimplicialChainComplex L
+isWellDefined oo
+
+H = randomSubSimplicialComplex(L)
+h = simplicialChainComplex H
+isWellDefined oo
+hRed = reducedSimplicialChainComplex H
+isWellDefined oo
+
+f = apply(spots h, i-> i=> inducedKFaceSimplicialChainComplexMap(i,L,H))
+F = map(l,h, hashTable f)
+isWellDefined F
+prune ker F
+
+fRed = apply(spots hRed, i-> i=> inducedKFaceSimplicialChainComplexMap(i,L,H))
+
+FRed = map(lRed,hRed, hashTable fRed)
+isWellDefined F
+prune ker FRed
+
+
+--
