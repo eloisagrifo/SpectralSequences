@@ -29,7 +29,9 @@ newPackage(
     )
 
 export {"SimplicialSet", "simplicialSet","simplicialChainComplex", "reducedSimplicialChainComplex", "ambientSimplicialSetSize",
-    "ambientSimplicialSet","inducedKFaceSimplicialChainComplexMap", "facets", "randomSimplicialSet", "spots", "randomSubset","randomSubSimplicialComplex", "simplicialChainComplex2", "reducedSimplicialChainComplex2"}
+    "ambientSimplicialSet","inducedKFaceSimplicialChainComplexMap", "facets", "randomSimplicialSet", "spots", "randomSubset","randomSubSimplicialComplex",
+     "inducedSimplicialChainComplexMap"
+    }
 
 -* Code section *-
 
@@ -282,7 +284,6 @@ return sign
 )
 
 
------ there actually appears to be a bug in what follows -------
 
 -- make a constructor for making matrices
 -- that represented the simplicial boundary
@@ -290,7 +291,11 @@ return sign
 -- what follows appears to work OK
 --  more testing is required.
 
-simplicialMakeMatrix := (kPlusOneFaces,kFaces) -> (
+-- make a method for now to allow for additional testing
+
+simplicialMakeMatrix = method()
+
+simplicialMakeMatrix(List,List) := (kPlusOneFaces,kFaces) -> (
     n := # kPlusOneFaces;
     m := # kFaces;
     matrixList := 
@@ -312,8 +317,10 @@ reducedSimplicialChainComplex = method() -- return the chain complex (with contr
 reducedSimplicialChainComplex(SimplicialSet) := Complex => (L) ->
 (
     n := max spots L;
+        if n == -1 then (return complex hashTable {-1 => map(ZZ^0,ZZ^1,zero)})
+    else(
     mapsList := for i from 0 to n list (i => simplicialMakeMatrix(L#i,L#(i-1)));
-    append(mapsList,-1 => map(ZZ^0,target(mapsList#0)#1,zero));
+    append(mapsList,-1 => map(ZZ^0,target(mapsList#0)#1,zero)););
     return complex hashTable mapsList
 	)
 
@@ -321,10 +328,7 @@ simplicialChainComplex = method() --  return the non-reduced simplicial chain co
 
 simplicialChainComplex(SimplicialSet) := Complex => (L) ->
 (
-    n := max spots L;
-    mapsList := for i from 1 to n list (i => simplicialMakeMatrix(L#i,L#(i-1)));
-    append(mapsList,map(ZZ^0,source simplicialMakeMatrix(L#0,L#(-1)),zero));
-    return complex hashTable mapsList
+ return(naiveTruncation(reducedSimplicialChainComplex L, 0, infinity))
 	)
         
 ---  Another method that would be of interest,
@@ -362,7 +366,18 @@ return matrix myMatrixList
 )
 
 
+-- assume H <= L
+-- given as input {H,h},{L,l} where h,l are either the simplicial chain complex (or the reduced simplicial chain complex)
+-- probably better to do this for a new type "FilteredSimplicialComplex" but this likely would
+-- be better to do within the SpectralSequences package ---
 
+inducedSimplicialChainComplexMap = method()
+
+inducedSimplicialChainComplexMap(List,List) := (H,L) ->
+(
+f := apply(spots H#1, i-> i=> inducedKFaceSimplicialChainComplexMap(i,L#0,H#0));
+return map(L#1,H#1, hashTable f)
+   )
 
 -----
  
@@ -608,16 +623,24 @@ isWellDefined oo
 hRed = reducedSimplicialChainComplex H
 isWellDefined oo
 
-f = apply(spots h, i-> i=> inducedKFaceSimplicialChainComplexMap(i,L,H))
-F = map(l,h, hashTable f)
-isWellDefined F
-prune ker F
 
-fRed = apply(spots hRed, i-> i=> inducedKFaceSimplicialChainComplexMap(i,L,H))
+needsPackage"Complexes"
 
-FRed = map(lRed,hRed, hashTable fRed)
-isWellDefined F
-prune ker FRed
+inducedSimplicialChainComplexMap({L,l},{H,h})
+
+inducedSimplicialChainComplexMap({L,lRed},{H,hRed})
+
+--- Various trivial things to test ----
+
+simplicialChainComplex(simplicialSet({{1}}))
+
+simplicialChainComplex(simplicialSet({{}}))
+
+reducedSimplicialChainComplex(simplicialSet({{}}))
+
+needsPackage "Complexes"
+
+complex hashTable({0 => map(ZZ^0,ZZ^0,zero)})
 
 
 --
