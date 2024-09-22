@@ -20,7 +20,7 @@
 newPackage(
     "AbstractSimplicialComplexes",
     Version => "0.1",
-    Date => "21 September 2024",
+    Date => "22 September 2024",
     Headline => "AbstractSimplicialComplexes",
     Authors => {{ Name => "Nathan Grieve", Email => "nathan.m.grieve@gmail.com", HomePage => "https://sites.google.com/view/nathan-grieve"}},
     AuxiliaryFiles => false,
