@@ -20,7 +20,7 @@
 newPackage(
     "AbstractSimplicialComplexes",
     Version => "0.1",
-    Date => "23 September 2024",
+    Date => "24 September 2024",
     Headline => "AbstractSimplicialComplexes",
     Authors => {{ Name => "Nathan Grieve", Email => "nathan.m.grieve@gmail.com", HomePage => "https://sites.google.com/view/nathan-grieve"}},
     AuxiliaryFiles => false,
@@ -64,9 +64,9 @@ min Complex := K -> min spots K
 SimplicialSet = new Type of HashTable
 SimplicialSet.synonym = "simplicial set"
 
---SimplicialSet.GlobalAssignHook = globalAssignFunction
---SimplicialSet.GlobalReleaseHook = globalReleaseFunction
---describe SimplicialSet := K -> net expression K
+SimplicialSet.GlobalAssignHook = globalAssignFunction
+SimplicialSet.GlobalReleaseHook = globalReleaseFunction
+describe SimplicialSet := K -> net expression K
 
 
 new SimplicialSet := SimplicialSet =>(cl) -> (
@@ -259,9 +259,6 @@ ambientSimplicialSet(SimplicialSet) := SimplicialSet => (K) -> (
 -- testing purposes and is not used explicitly in the sequel
 --partial := (L) -> ( 
  -- apply(0 .. (#L-1), i -> {(-1)^i, drop(L,{i,i})})
-
-
------ there actually appears to be a bug in what follows  -------
 
  
 -- The following function seems useful to  
