@@ -20,7 +20,7 @@
 newPackage(
     "AbstractSimplicialComplexes",
     Version => "0.1",
-    Date => "22 September 2024",
+    Date => "23 September 2024",
     Headline => "AbstractSimplicialComplexes",
     Authors => {{ Name => "Nathan Grieve", Email => "nathan.m.grieve@gmail.com", HomePage => "https://sites.google.com/view/nathan-grieve"}},
     AuxiliaryFiles => false,
@@ -30,7 +30,7 @@ newPackage(
 
 export {"SimplicialSet", "simplicialSet","simplicialChainComplex", "reducedSimplicialChainComplex", "ambientSimplicialSetSize",
     "ambientSimplicialSet","inducedKFaceSimplicialChainComplexMap", "facets", "randomSimplicialSet", "spots", "randomSubset","randomSubSimplicialComplex",
-     "inducedSimplicialChainComplexMap"
+     "inducedSimplicialChainComplexMap","inducedReducedSimplicialChainComplexMap"
     }
 
 -* Code section *-
@@ -366,18 +366,30 @@ return matrix myMatrixList
 )
 
 
--- assume H <= L
--- given as input {H,h},{L,l} where h,l are either the simplicial chain complex (or the reduced simplicial chain complex)
--- probably better to do this for a new type "FilteredSimplicialComplex" but this likely would
--- be better to do within the SpectralSequences package ---
+
+--If H <= L then give the induced chain complex map for (non-reduced) simplicalChainComplexes
 
 inducedSimplicialChainComplexMap = method()
 
-inducedSimplicialChainComplexMap(List,List) := (H,L) ->
+inducedSimplicialChainComplexMap(SimplicialSet,SimplicialSet) := (H,L) ->
 (
-f := apply(spots H#1, i-> i=> inducedKFaceSimplicialChainComplexMap(i,L#0,H#0));
-return map(L#1,H#1, hashTable f)
+    h := simplicialChainComplex H;
+    l := simplicialChainComplex L;
+    f := hashTable apply(spots h, i -> i => inducedKFaceSimplicialChainComplexMap(i,L,H));
+    return map(l,h,f);
    )
+
+--If H <= L then give the induced chain complex map for reduced simplicalChainComplexes
+
+inducedReducedSimplicialChainComplexMap = method()
+
+inducedReducedSimplicialChainComplexMap(SimplicialSet,SimplicialSet) := (L,H) -> (
+    h := reducedSimplicialChainComplex H;
+    l := reducedSimplicialChainComplex L;
+    f := hashTable apply(spots h, i -> if i == -1 then i => map(l_(-1),h_(-1),id_(h_(-1))) else i => inducedKFaceSimplicialChainComplexMap(i,L,H));
+    return map(l,h,f);
+    )
+
 
 -----
  
@@ -623,12 +635,12 @@ isWellDefined oo
 hRed = reducedSimplicialChainComplex H
 isWellDefined oo
 
+inducedSimplicialChainComplexMap(L,H)
+isWellDefined oo
 
-needsPackage"Complexes"
+inducedReducedSimplicialChainComplexMap(L,H) 
+isWellDefined oo
 
-inducedSimplicialChainComplexMap({L,l},{H,h})
-
-inducedSimplicialChainComplexMap({L,lRed},{H,hRed})
 
 --- Various trivial things to test ----
 
@@ -638,9 +650,3 @@ simplicialChainComplex(simplicialSet({{}}))
 
 reducedSimplicialChainComplex(simplicialSet({{}}))
 
-needsPackage "Complexes"
-
-complex hashTable({0 => map(ZZ^0,ZZ^0,zero)})
-
-
---
