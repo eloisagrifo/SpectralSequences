@@ -29,7 +29,7 @@ newPackage(
     )
 
 export {"SimplicialSet", "simplicialSet","simplicialChainComplex", "reducedSimplicialChainComplex", "ambientSimplicialSetSize",
-    "ambientSimplicialSet","inducedKFaceSimplicialChainComplexMap", "facets", "randomSimplicialSet", "spots", "randomSubset","randomSubSimplicialComplex",
+    "ambientSimplicialSet", "facets", "randomSimplicialSet", "spots", "randomSubSimplicialComplex",
      "inducedSimplicialChainComplexMap","inducedReducedSimplicialChainComplexMap"
     }
 
@@ -332,16 +332,13 @@ simplicialChainComplex(SimplicialSet) := Complex => (L) ->
 	)
         
 ---  Another method that would be of interest,
---  is given an inclusion (or more general a morphism)
+--  is to give an inclusion (or more general a morphism)
 ---- of simplicial sets, then compute the induced chain complex morphism of SimplicialChainComplexes
----  But this is omitted for now
 --- An important special case would be to view a
 --  sub simplicial set of the full simplicial set (simplex) and then to compute
 --- the corresponding induced inclusion morphism.
---- For this at least, we want to regard everything as lex ordered for simplicity.
 
-
----  Actually perhaps better will be to make an k-face inclusion map given an inclusion of simplicial sets 
+---  A first step is to make an k-face inclusion map given an inclusion of simplicial sets 
 ---  Assume that L <= H
 ---  If L_k has no faces then the method returns an error message
 ---  Otherwise the method produces the appropriate matrix
@@ -371,11 +368,11 @@ return matrix myMatrixList
 
 inducedSimplicialChainComplexMap = method()
 
-inducedSimplicialChainComplexMap(SimplicialSet,SimplicialSet) := (H,L) ->
+inducedSimplicialChainComplexMap(SimplicialSet,SimplicialSet) := (L,H) ->
 (
     h := simplicialChainComplex H;
     l := simplicialChainComplex L;
-    f := hashTable apply(spots h, i -> i => inducedKFaceSimplicialChainComplexMap(i,L,H));
+    f := hashTable apply(spots h, i -> if i == -1 then i => map(ZZ^0,ZZ^0,zero) else i => inducedKFaceSimplicialChainComplexMap(i,L,H));
     return map(l,h,f);
    )
 
@@ -406,6 +403,7 @@ we provide methods for working with the chain complexes that are associated to e
  }
 
 
+
 --------------------------------------------
 -- Documentation of methods and functions --
 --------------------------------------------
@@ -427,6 +425,7 @@ doc ///
 
 --    SeeAlso
 ///
+
 
 
 
@@ -460,7 +459,6 @@ doc ///
 	     K = randomSimplicialSet(4)
 	     J = randomSubSimplicialComplex(K)
 ///
-
 
 
 doc ///
@@ -498,27 +496,44 @@ doc ///
 	       J = ambientSimplicialSetSize(K)
 ///
 
+
+
 doc ///
      Key
-     	  inducedKFaceSimplicialChainComplexMap
-	  (inducedKFaceSimplicialChainComplexMap,ZZ,SimplicialSet,SimplicialSet)
+     	  inducedSimplicialChainComplexMap
+	  (inducedSimplicialChainComplexMap,SimplicialSet,SimplicialSet)
      Headline
      	  induced maps that arise via inclusions of abstract simplicial complexes
      Description
      	  Text	  
 	     If an abstract simplicial complex can be regarded as a subsimplicial complex of another
 	     abstract simplicial complex, then it is useful to calculate the induced map at the level of
-	     SimplicialChainComplexes.  For a given homological degree k, this is made
-	     possible by the method inducedKFaceSimplicialChainComplexMap.
+	     Simplicial Chain Complexes.  This is made
+	     possible by the method inducedSimplicialChainComplexMap.
 	  Example
 	       K = simplicialSet({{1,2},{3}})
 	       J = ambientSimplicialSet(K)
-	       inducedKFaceSimplicialChainComplexMap(1,J,K)
-     Caveat
-          Text
-               If K has no k-faces then inducedKFaceSimplicialChainComplexMap(k,J,K)
-	       will return an error message.
---    SeeAlso
+	       inducedSimplicialChainComplexMap(J,K)
+///
+
+
+
+doc ///
+     Key
+     	  inducedReducedSimplicialChainComplexMap
+	  (inducedReducedSimplicialChainComplexMap,SimplicialSet,SimplicialSet)
+     Headline
+     	  induced maps that arise via inclusions of abstract simplicial complexes
+     Description
+     	  Text	  
+	     If an abstract simplicial complex can be regarded as a subsimplicial complex of another
+	     abstract simplicial complex, then it is useful to calculate the induced map at the level of
+	     Reduced Simplicial Chain Complexes.  This is made
+	     possible by the method inducedReducedSimplicialChainComplexMap.
+	  Example
+	       K = simplicialSet({{1,2},{3}})
+	       J = ambientSimplicialSet(K)
+	       inducedReducedSimplicialChainComplexMap(J,K)
 ///
 
 
@@ -538,7 +553,6 @@ doc ///
 	       reducedSimplicialChainComplex(K)
 ///
 
-
 doc ///
      Key
      	  simplicialChainComplex
@@ -550,9 +564,9 @@ doc ///
 	     This method returns the (non-reduced) homological chain complex (i.e., there is no nonzero term in
 		 homological degree -1 that corresponds to the empty face) that is asociated
 	     to an abstract simplicial complex.  The chain complex is defined over the integers.
-	  Example
-	       K = simplicialSet({{1,2,3},{1,4,5},{2,4,5,7}})
-	       C = simplicialChainComplex(K)
+--	  Example
+--	       K = simplicialSet({{1,2,3},{1,4,5},{2,4,5,7}})
+--	       C = simplicialChainComplex(K)
 ///
 
 doc ///
@@ -595,6 +609,21 @@ doc ///
 	       K_(-1)
 ///
 
+doc ///
+     Key
+          facets 
+          (facets, SimplicialSet)
+     Headline
+     	  The facets of a simplicial set  
+     Description
+     	  Text	  
+	     This method returns the collection of facets of a given SimplicialSet.
+	  Example
+	       K = simplicialSet(3)
+	       facets K
+///
+
+
 
 
 -* Test section *-
@@ -619,6 +648,13 @@ viewHelp
 --
 --
 
+-- some possible additional items to add --
+-- filteredSimplicialSet
+--  filteredSimplicialChainComplex
+-- filteredReducedSimplicalChainComplex
+-- however perhaps these would work better in the
+-- filtered complex framework of the SpectralSequences.m2 package
+----
 
 -- Various testing --
 
@@ -635,6 +671,10 @@ isWellDefined oo
 hRed = reducedSimplicialChainComplex H
 isWellDefined oo
 
+H
+
+L
+
 inducedSimplicialChainComplexMap(L,H)
 isWellDefined oo
 
@@ -650,3 +690,17 @@ simplicialChainComplex(simplicialSet({{}}))
 
 reducedSimplicialChainComplex(simplicialSet({{}}))
 
+
+
+    h := simplicialChainComplex H;
+    l := simplicialChainComplex L;
+    f := hashTable apply(spots h, i -> i => inducedKFaceSimplicialChainComplexMap(i,L,H));
+    return map(l,h,f);
+
+
+K = simplicialSet({{1,2},{3}})
+J = ambientSimplicialSet(K)
+k = simplicialChainComplex K
+j = simplicialChainComplex J
+    
+inducedSimplicialChainComplexMap(J,K)
