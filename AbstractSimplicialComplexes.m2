@@ -25,7 +25,8 @@ newPackage(
     Authors => {{ Name => "Nathan Grieve", Email => "nathan.m.grieve@gmail.com", HomePage => "https://sites.google.com/view/nathan-grieve"}},
     AuxiliaryFiles => false,
     DebuggingMode => false,
-    PackageImports => {"Complexes"}
+    PackageImports => {"Complexes"},
+    PackageExports => {"Complexes"}
     )
 
 export {"SimplicialSet", "simplicialSet","simplicialChainComplex", "reducedSimplicialChainComplex", "ambientSimplicialSetSize",
@@ -135,7 +136,7 @@ simplicialSet = method()
 --  By default, it is assumed that the kfaces are all lex ordered positive integers 
 
 makeKFaces := (L,k) -> (
-    toList(set(flatten(apply(#L, i -> subsets(L_i,k)))))
+    toList(set(flatten(apply(#L, i -> subsets(sort L_i,k)))))
     )
 
 makeAllFaces := (L) -> (
@@ -701,3 +702,42 @@ k = simplicialChainComplex K
 j = simplicialChainComplex J
     
 inducedSimplicialChainComplexMap(J,K)
+
+-- Various other examples to test --
+
+-- Various Examples to test the package --
+
+-- E.g. 4-simplex --
+
+K = simplicialSet {{1,2,3,4}}
+
+k = simplicialChainComplex K
+
+simplicialSet{{2,1,3,4}}
+
+prune HH k
+
+-- E.g. circle
+
+K = simplicialSet {{1,2}, {1,3}, {2,3}}
+k = simplicialChainComplex K
+k.dd
+prune HH k
+
+prune HH k
+
+viewHelp"homology"
+
+prune k
+
+
+-- E.g. Klien Bottle --
+
+-- As in the Klein Bottle Example from M2 Simplicial Complexes Package
+-- Here is a simplicial complex that gives the Klein Bottle -- 
+
+K = simplicialSet {{3, 7, 8}, {1, 7, 8}, {3, 6, 8}, {1, 6, 8}, {5, 6, 7}, {4, 6, 7}, {1, 5,7}, {3, 4, 7}, {2, 5, 6}, {1, 4, 6}, {2, 3, 6}, {3, 4, 5}, {2, 4, 5}, {1, 3, 5}, {1, 2, 4}, {1, 2, 3}}
+
+k = simplicialChainComplex K
+
+prune HH k
