@@ -741,3 +741,13 @@ K = simplicialSet {{3, 7, 8}, {1, 7, 8}, {3, 6, 8}, {1, 6, 8}, {5, 6, 7}, {4, 6,
 k = simplicialChainComplex K
 
 prune HH k
+
+-- This is the form of the Klein Bottle given in the SpectralSequences Package
+-- In this example we give a simplicial realization of the fibration $\mathbb{S}^1 \rightarrow {\rm Klein Bottle} \rightarrow \mathbb{S}^1$. To give a simplicial realization of this fibration we first make a simplicial complex which gives a triangulation of the Klein Bottle. The triangulation of the Klein Bottle that we use has 18 facets and is, up to relabling,
+-- the triangulation of the Klein bottle given in Figure 6.14 of Armstrong's book Basic Topology.
+
+K = simplicialSet     {{1,2,7}, {7,8,2}, {4,7,8}, {4,8,5}, {1,4,5}, {1,5,2}, {2,8,3}, {8,3,9}, {5,8,9}, {5,9,6}, {2,5,6}, {2,6,3}, {3,9,1}, {9,1,4}, {6,9,4},{ 6,7,4}, {3,6,7}, {3,7,1}}
+
+prune HH simplicialChainComplex K
+
+-- we are getting the correct answers and so it appears that everything is on track --
