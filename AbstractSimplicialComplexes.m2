@@ -499,6 +499,8 @@ doc ///
 	       abstractSimplicialComplex(4) 
 ///
 
+
+
 doc ///
      Key
      	  "How to make reduced and non-reduced simplicial chain complexes"
@@ -526,10 +528,21 @@ doc ///
 	     Given a subsimplicial complex there are induced simplicial chain complex maps.
 	     can be used to make non-reduced and reduced simplicial chain complexes.
 	     This is illustrated in the following way.
---	  Example
---	     K = randomAbstractSimplicialComplex(4)
---             randomSubSimplicialComplex(K)
---             facets(K)
+	  Example
+	     K = randomAbstractSimplicialComplex(4)
+             randomSubSimplicialComplex(K)
+             facets(K)
+///
+
+doc ///
+     Key
+     	  "Calculations with random simplicial complexes"
+     Headline
+     	  Homological calculations on random simplicial complexes
+     Description
+     	  Text	  
+	     In what follows we illustrate a collection of homological calculations that
+	     can be performed on random simplicial complexes. 
 ///
 
 
@@ -817,12 +830,49 @@ viewHelp"AbstractSimplicialComplexes"
 --
 --
 
--- some possible additional items to add --
--- filteredAbstractSimplicialComplex
---  filteredSimplicialChainComplex
--- filteredReducedSimplicalChainComplex
--- however perhaps these would work better in the
--- filtered complex framework of the SpectralSequences.m2 package
-----
 
+
+--- we want to make a VR-complex given a "point-cloud matrix"
+--- we can represent a "point-cloud matrix" as a upper triangular-matrix
+
+
+
+
+restart
+
+needsPackage"AbstractSimplicialComplexes"
+
+
+--  Motivated by the perspective of Carlsson and his school,
+-- we can model a random dimension n random point cloud distance matrix as an
+-- n x n upper triangular matrix with random real entries above the main diagonal
+-- in doing so the (i,j) entry represents the distancd d(x_i,x_j) between the points
+-- x_i and x_j; the corresponding Vietoris-Rips complex with vertex set supported on
+-- [n] := {1,...,n} and depending on parameter e > 0 is the simplicial complex that
+-- has k-faces those {i_0 < \dots < i_k} such that d(x_{i_j},x_{i_l}) <= e
+-- for all i_j, i_l \in {i_0 < \dots < i_k}.  We refer to p. 104 of the text
+-- "Toplogical Data Analysis" by Carlsson and Vejdemo-Johansson for example for more details.
+
+-- Putting everything together a random such VR complex on [n] and depending on a given
+-- parameter e can be modelled in the following way.
+ 
+randomVRcomplex := (n,e) -> (
+-- return a random VR-complex supported on [n] and depending on parameter e --
+    L := for i from 1 to n list i;
+    setRandomSeed(currentTime());
+    M := fillMatrix(mutableMatrix(RR,n,n), UpperTriangular => true);
+    myFaces := select(subsets(L), i-> all(apply(subsets(i,2), j-> M_(j#0-1,j#1-1) <= e)));
+    K = abstractSimplicialComplex myFaces;
+    return K
+    )
+
+-- So for example the facets of a random VR complex on [10] = {1,...,10} and depending on
+-- a parameter e = .4 is described as
+
+facets randomVRcomplex(10,.4)
+
+-- a tally for the reduced homology of a random collection of such VR complexes
+-- can then be described as
+
+tally(for i from 1 to 1000 list (prune HH reducedSimplicialChainComplex(randomVRcomplex(10,.4))))
 
