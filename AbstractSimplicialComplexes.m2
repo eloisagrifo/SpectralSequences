@@ -29,9 +29,9 @@ newPackage(
     PackageExports => {"Complexes"}
     )
 
-export {"SimplicialSet", "simplicialSet","simplicialChainComplex", "reducedSimplicialChainComplex", "ambientSimplicialSetSize",
-    "ambientSimplicialSet", "facets", "randomSimplicialSet", "randomSubSimplicialComplex",
-     "inducedSimplicialChainComplexMap","inducedReducedSimplicialChainComplexMap","areEqual"
+export {"AbstractSimplicialComplex", "abstractSimplicialComplex","simplicialChainComplex", "reducedSimplicialChainComplex", "ambientAbstractSimplicialComplexSize",
+    "ambientAbstractSimplicialComplex", "facets", "randomAbstractSimplicialComplex", "randomSubSimplicialComplex",
+     "inducedSimplicialChainComplexMap","inducedReducedSimplicialChainComplexMap","areEqual", "dimAbstractSimplicialComplex",
     }
 
 -* Code section *-
@@ -63,16 +63,16 @@ min Complex := K -> min spots K
 -- For working with AbstractSimplicial Complexes ---
 -- The integer keys will output the list of i-simplicies
 
-SimplicialSet = new Type of HashTable
-SimplicialSet.synonym = "simplicial set"
+AbstractSimplicialComplex = new Type of HashTable
+AbstractSimplicialComplex.synonym = "simplicial set"
 
-SimplicialSet.GlobalAssignHook = globalAssignFunction
-SimplicialSet.GlobalReleaseHook = globalReleaseFunction
-describe SimplicialSet := K -> net expression K
+AbstractSimplicialComplex.GlobalAssignHook = globalAssignFunction
+AbstractSimplicialComplex.GlobalReleaseHook = globalReleaseFunction
+describe AbstractSimplicialComplex := K -> net expression K
 
 
-new SimplicialSet := SimplicialSet =>(cl) -> (
-    K := newClass(SimplicialSet, new HashTable); -- sigh
+new AbstractSimplicialComplex := AbstractSimplicialComplex =>(cl) -> (
+    K := newClass(AbstractSimplicialComplex, new HashTable); -- sigh
     K)
 
 ---  It will be better to make some additional keys for this class ---
@@ -84,14 +84,14 @@ new SimplicialSet := SimplicialSet =>(cl) -> (
 ---  We will also want to make a key "generators" which points to the list of generators used to define
 ---  We would want to make ``maps" between SimplicalSets 
 
-spots SimplicialSet := List => (
+spots AbstractSimplicialComplex := List => (
   K -> sort select(keys K, i -> class i === ZZ))
 
 
 
 -- This returns the p-faces of a simplicial set 
 
-SimplicialSet _ ZZ := SimplicialSet => (K,p) -> (
+AbstractSimplicialComplex _ ZZ := AbstractSimplicialComplex => (K,p) -> (
   if K#?p then K#p 
   )
 
@@ -115,7 +115,7 @@ select(L,i-> isMaximal(i,L))
 
 facets = method()
 
-facets(SimplicialSet) := List => K ->(
+facets(AbstractSimplicialComplex) := List => K ->(
     L := flatten(apply(spots K, i-> K_i));
     return listFacets(L)
     )
@@ -125,22 +125,28 @@ facets(SimplicialSet) := List => K ->(
 
 areEqual = method()
 
-areEqual(SimplicialSet,SimplicialSet) := Boolean => (K,L) ->(
+areEqual(AbstractSimplicialComplex,AbstractSimplicialComplex) := Boolean => (K,L) ->(
     return (facets K) == (facets L)
     )
 
+--- return the dimension of a simplicial set
+
+dimAbstractSimplicialComplex = method()
+
+dimAbstractSimplicialComplex(AbstractSimplicialComplex) := ZZ => (K) -> (
+    return max apply(facets(K), i -> #i)
+    )
 
 
+--- Constructors for AbstractSimplicialComplexs
 
---- Constructors for SimplicialSets
-
-simplicialSet = method()
+abstractSimplicialComplex = method()
 
 ----  We need to make a sort of ``main primitive constructor" for simplicial sets
 ----  We need to make a method perhaps to check if a simplicial set is a simplicial complex (i.e., to check closure under taking subsets of a face)
 
 
--- the most basic constructor of a SimplicialSet
+-- the most basic constructor of a AbstractSimplicialComplex
 
 -- The idea is to make a simplical set starting from a list of faces.
 --  The list of faces need not be facets.
@@ -160,17 +166,22 @@ makeAllFaces := (L) -> (
     )
 
 
-simplicialSet(List) := SimplicialSet => L -> (
-    return new SimplicialSet from makeAllFaces(L)
+abstractSimplicialComplex(List) := AbstractSimplicialComplex => L -> (
+    return new AbstractSimplicialComplex from makeAllFaces(L)
     )
 
 
 --- The following method will make the (n-1)-dimensional n-simplex on [n] = {1,...,n}
-simplicialSet(ZZ) := SimplicialSet => (n) -> (
+abstractSimplicialComplex(ZZ) := AbstractSimplicialComplex => (n) -> (
     L := for i from 1 to n list i;
-    return simplicialSet({L})
+    return abstractSimplicialComplex({L})
     )
 
+--- Make the "r-skeleton" on [n] = {1,...n}
+
+abstractSimplicialComplex(ZZ,ZZ) := AbstractSimplicialComplex => (n,r) -> (
+    return abstractSimplicialComplex subsets(for i from 1 to n list i,r)
+    )
 
 --
 
@@ -186,6 +197,14 @@ randomSubset(ZZ) := List => (n) -> (
    sort unique (for i from 1 to k list (random(1,n)))
     )
 
+-- random size r subset --
+
+randomSubset(ZZ,ZZ) := List => (n,r) -> (
+   setRandomSeed(currentTime());
+   sort unique (for i from 1 to r list (random(1,n)))
+    )
+
+
 -- make a random subset of a given set
 
 randomSubset(List) := List => (L) -> (
@@ -196,48 +215,78 @@ randomSubset(List) := List => (L) -> (
     mySubset_(random(binomial(n,k)))
     )
 
+-- a variant of this is to make a random k element subset of a given set --
 
 -- The following will make a "random" simplicial complex on {1,...,n} --
 
-randomSimplicialSet = method()
+randomAbstractSimplicialComplex = method()
 
-randomSimplicialSet(ZZ) := SimplicialSet => (n) -> (
+randomAbstractSimplicialComplex(ZZ) := AbstractSimplicialComplex => (n) -> (
      setRandomSeed(currentTime());
      listLength := 1 + random(2^n);
-     simplicialSet unique(for i from 1 to listLength list randomSubset(n))
+     abstractSimplicialComplex unique(for i from 1 to listLength list randomSubset(n))
      )
 
 ------
 
+--  it likely would also be good to make a randomSimplicial complex
+--  on [n] with dimension at most equal to r
+
+-----
+
+randomAbstractSimplicialComplex(ZZ,ZZ) := AbstractSimplicialComplex =>(n,r) -> (
+     setRandomSeed(currentTime());
+     listLength := 1 + random(binomial(n,r));
+     abstractSimplicialComplex unique(for i from 1 to listLength list randomSubset(n,r))
+    )
+
+
+-- can we make the random complex Y_d(n,m) which has vertex set
+-- [n] and complete (d − 1)-skeleton, and has exactly m d-dimensional faces,
+-- chosen at random from all binomial(binomial(n,d+1),m) possibilities.
+-- Such random complexes appear in lots of different contexts including in the article
+-- COHEN–LENSTRA HEURISTICS FOR TORSION IN HOMOLOGY OF RANDOM COMPLEXES
+-- (MATTHEW KAHLE, FRANK H. LUTZ, ANDREW NEWMAN, AND KYLE PARSONS) --
+-- Some additinal testing of this is needed 
+
+randomAbstractSimplicialComplex(ZZ,ZZ,ZZ) := (n,m,d) -> (
+    setRandomSeed(currentTime());
+    L := for i from 1 to n list i;
+    dDimlSubsets := subsets(L,d+1);
+    randomFaces := for i from 1 to m list (dDimlSubsets#(random(binomial(n,d+1))));
+    append(append(randomFaces,{L}),subsets(L,d));
+    return abstractSimplicialComplex(randomFaces)
+    )
+
 randomSubSimplicialComplex = method()
 
-randomSubSimplicialComplex(SimplicialSet) := SimplicialSet => (K) -> (
+randomSubSimplicialComplex(AbstractSimplicialComplex) := AbstractSimplicialComplex => (K) -> (
  setRandomSeed(currentTime());
  L := facets K;
- simplicialSet unique apply(L, i-> randomSubset(i))
+ abstractSimplicialComplex unique apply(L, i-> randomSubset(i))
 )
 
 ---
 
 -- ambient simplicial set
 
-ambientSimplicialSetSize = method() -- return the size of the underyling ambient simplex
+ambientAbstractSimplicialComplexSize = method() -- return the size of the underyling ambient simplex
 
-ambientSimplicialSetSize(SimplicialSet) := (K) -> (
+ambientAbstractSimplicialComplexSize(AbstractSimplicialComplex) := (K) -> (
     max flatten(K_0)
     )
 
 
-ambientSimplicialSet = method() -- return the underlying ambient simplex 
+ambientAbstractSimplicialComplex = method() -- return the underlying ambient simplex 
 
 
-ambientSimplicialSet(SimplicialSet) := SimplicialSet => (K) -> (
-    return simplicialSet(ambientSimplicialSetSize(K))
+ambientAbstractSimplicialComplex(AbstractSimplicialComplex) := AbstractSimplicialComplex => (K) -> (
+    return abstractSimplicialComplex(ambientAbstractSimplicialComplexSize(K))
     )
 
 ---
--- Another method that could be added later is a script to check that a proposed "SimplicialSet"
--- is indeed a "SimplicialSet" i.e., that the closure property on subsets is indeed satisfied
+-- Another method that could be added later is a script to check that a proposed "AbstractSimplicialComplex"
+-- is indeed a "AbstractSimplicialComplex" i.e., that the closure property on subsets is indeed satisfied
 --  this is something that we will postpone for the present time
 
 ---------
@@ -329,7 +378,7 @@ simplicialMakeMatrix(List,List) := (kPlusOneFaces,kFaces) -> (
 
 reducedSimplicialChainComplex = method() -- return the chain complex (with contribution from the empty face) that is associated to a simplicial set (i.e., an abstract simplicial complex)
 
-reducedSimplicialChainComplex(SimplicialSet) := Complex => (L) ->
+reducedSimplicialChainComplex(AbstractSimplicialComplex) := Complex => (L) ->
 (
     n := max spots L;
         if n == -1 then (return complex hashTable {-1 => map(ZZ^0,ZZ^1,zero)})
@@ -341,7 +390,7 @@ reducedSimplicialChainComplex(SimplicialSet) := Complex => (L) ->
 
 simplicialChainComplex = method() --  return the non-reduced simplicial chain complex (i.e., the chain complex with no contribution from the empty face)
 
-simplicialChainComplex(SimplicialSet) := Complex => (L) ->
+simplicialChainComplex(AbstractSimplicialComplex) := Complex => (L) ->
 (
  return(naiveTruncation(reducedSimplicialChainComplex L, 0, infinity))
 	)
@@ -363,7 +412,7 @@ simplicialChainComplex(SimplicialSet) := Complex => (L) ->
 
 inducedKFaceSimplicialChainComplexMap = method()
 
-inducedKFaceSimplicialChainComplexMap(ZZ,SimplicialSet,SimplicialSet) := (k,H,L) ->
+inducedKFaceSimplicialChainComplexMap(ZZ,AbstractSimplicialComplex,AbstractSimplicialComplex) := (k,H,L) ->
 (
 M := L_k;
 N := H_k;
@@ -383,7 +432,7 @@ return matrix myMatrixList
 
 inducedSimplicialChainComplexMap = method()
 
-inducedSimplicialChainComplexMap(SimplicialSet,SimplicialSet) := (L,H) ->
+inducedSimplicialChainComplexMap(AbstractSimplicialComplex,AbstractSimplicialComplex) := (L,H) ->
 (
     h := simplicialChainComplex H;
     l := simplicialChainComplex L;
@@ -395,7 +444,7 @@ inducedSimplicialChainComplexMap(SimplicialSet,SimplicialSet) := (L,H) ->
 
 inducedReducedSimplicialChainComplexMap = method()
 
-inducedReducedSimplicialChainComplexMap(SimplicialSet,SimplicialSet) := (L,H) -> (
+inducedReducedSimplicialChainComplexMap(AbstractSimplicialComplex,AbstractSimplicialComplex) := (L,H) -> (
     h := reducedSimplicialChainComplex H;
     l := reducedSimplicialChainComplex L;
     f := hashTable apply(spots h, i -> if i == -1 then i => map(l_(-1),h_(-1),id_(h_(-1))) else i => inducedKFaceSimplicialChainComplexMap(i,L,H));
@@ -411,7 +460,7 @@ beginDocumentation()
 document { 
   Key => AbstractSimplicialComplexes,
   Headline => "a package for working with abstract simplicial complexes",
-  "In this package, by a slight abuse of termionalogy we mostly refer to abstract simplicial complexes as 'SimplicialSets'.  By our viewpoint, `abstract simplicial complexes' have vertices 
+  "In this package, by a slight abuse of termionalogy we mostly refer to abstract simplicial complexes as 'AbstractSimplicialComplexs'.  By our viewpoint, `abstract simplicial complexes' have vertices 
 supported on the set [n] := {1,...,n}.
   The aim of this package is to provide a methology for working with such objects directly.  We are especially interested in homological aspects thereof; in particular
 we provide methods for working with the chain complexes that are associated to each abstract simplicial complex.",
@@ -433,21 +482,21 @@ doc ///
      Key
      	  "How to make abstract simplicial complexes"
      Headline
-     	  Using the type SimplicialSets to represent abstract simplicial complexes
+     	  Using the type AbstractSimplicialComplexs to represent abstract simplicial complexes
      Description
      	  Text	  
-	     The type SimplicialSet is a data type for working with
+	     The type AbstractSimplicialComplex is a data type for working with
 	     abstract simplicial complexes with vertices supported on [n] = {1,...,n}.
 	     Here we illustrate some of the most basic ways to interact with this data type.
           Text
 	     The simplicial complex that is generated by {1,2,3,4}, {2,3,5} and {1,5} can be
 	     constructed in the following way.	    
 	  Example
-               simplicialSet({{1,2,3,4}, {2,3,5},{1,5}})
+               abstractSimplicialComplex({{1,2,3,4}, {2,3,5},{1,5}})
           Text
 	       The simplex on the vertex set [4] can be constructed as     
           Example
-	       simplicialSet(4) 
+	       abstractSimplicialComplex(4) 
 ///
 
 doc ///
@@ -460,7 +509,7 @@ doc ///
 	     Non-reduced and reduced simplicial chain complexes can be constructed in the following way.
 	     This is illustrated in the following way.
 	  Example
-	       K = simplicialSet({{1,2,3,4}, {2,3,5},{1,5}}) 
+	       K = abstractSimplicialComplex({{1,2,3,4}, {2,3,5},{1,5}}) 
                k = simplicialChainComplex K
                k.dd
                kRed = reducedSimplicialChainComplex K
@@ -469,7 +518,7 @@ doc ///
 
 doc ///
      Key
-     	  "How to make subsimpliical complexes and induced simplicial chain complex maps"
+     	  "How to make subsimplical complexes and induced simplicial chain complex maps"
      Headline
      	  Induced simplicial chain complex maps via subsimplicial complexes 
      Description
@@ -477,10 +526,10 @@ doc ///
 	     Given a subsimplicial complex there are induced simplicial chain complex maps.
 	     can be used to make non-reduced and reduced simplicial chain complexes.
 	     This is illustrated in the following way.
-	  Example
-	     K = randomSimplicialSet(4)
-             randomSubSimplicialComplex(K)
-             facets(K)
+--	  Example
+--	     K = randomAbstractSimplicialComplex(4)
+--             randomSubSimplicialComplex(K)
+--             facets(K)
 ///
 
 
@@ -495,12 +544,12 @@ doc ///
 
 doc ///
      Key
-     	  SimplicialSet
+     	  AbstractSimplicialComplex
      Headline
      	  the type of all simplicial sets
      Description
      	  Text	  
-	     The type SimplicialSet is a data type for working with
+	     The type AbstractSimplicialComplex is a data type for working with
 	     abstract simplicial complexes with vertices supported on [n] = {1,...,n}.
 ///
 
@@ -512,20 +561,22 @@ doc ///
 doc ///
     Key
          areEqual
-	 (areEqual,SimplicialSet,SimplicialSet)
+	 (areEqual,AbstractSimplicialComplex,AbstractSimplicialComplex)
     Headline
          Decide if two simplicial sets are equal
     Description
           Text
 	     Decides if two simplicial sets are equal
 	  Example
-	     areEqual(randomSimplicialSet(4),randomSimplicialSet(4))
+	     areEqual(randomAbstractSimplicialComplex(4),randomAbstractSimplicialComplex(4))
 ///	     
 
 doc ///
     Key
-         randomSimplicialSet
-	 (randomSimplicialSet,ZZ)
+         randomAbstractSimplicialComplex
+	 (randomAbstractSimplicialComplex,ZZ)
+	 (randomAbstractSimplicialComplex,ZZ,ZZ)
+	 (randomAbstractSimplicialComplex,ZZ,ZZ)
     Headline
           Create a random simplicial set
     Description
@@ -533,7 +584,7 @@ doc ///
 	     Creates a random abstract simplicial complex with vertices supported on a subset of [n] = {1,...,n}
           Example
 	     setRandomSeed(currentTime());
-	     K = randomSimplicialSet(4)
+	     K = randomAbstractSimplicialComplex(4)
     SeeAlso
         "random"
 	"randomSquareFreeMonomialIdeal"
@@ -542,22 +593,22 @@ doc ///
 doc ///
     Key
          randomSubSimplicialComplex
-	 (randomSubSimplicialComplex,SimplicialSet)
+	 (randomSubSimplicialComplex,AbstractSimplicialComplex)
     Headline
           Create a random sub-simplicial set
     Description
           Text
 	     Creates a random sub-simplicial complex of a given simplicial complex
           Example
-	     K = randomSimplicialSet(4)
+	     K = randomAbstractSimplicialComplex(4)
 	     J = randomSubSimplicialComplex(K)
 ///
 
 
 doc ///
      Key
-     	  ambientSimplicialSet
-	  (ambientSimplicialSet,SimplicialSet)
+     	  ambientAbstractSimplicialComplex
+	  (ambientAbstractSimplicialComplex,AbstractSimplicialComplex)
      Headline
      	  the ambient simplex
      Description
@@ -567,16 +618,15 @@ doc ///
 	     complex of the simplex on [n].  This method returns this simplex as
 	     the ambient simplical complex.
 	  Example
-	       K = simplicialSet({{1,2},{3}})
-	       J = ambientSimplicialSet(K)
-   
+	       K = abstractSimplicialComplex({{1,2},{3}})
+	       J = ambientAbstractSimplicialComplex(K)
 ///
 
 
 doc ///
      Key
-     	  ambientSimplicialSetSize
-	  (ambientSimplicialSetSize,SimplicialSet)
+     	  ambientAbstractSimplicialComplexSize
+	  (ambientAbstractSimplicialComplexSize,AbstractSimplicialComplex)
      Headline
      	  the ambient simplex size
      Description
@@ -585,8 +635,8 @@ doc ///
 	     then it seems useful to regard this simplicial complex as being a subsimplicial
 	     complex of the simplex on [n].  This method simply returns this largest integer n.
 	  Example
-	       K = simplicialSet({{1,2},{3}})
-	       J = ambientSimplicialSetSize(K)
+	       K = abstractSimplicialComplex({{1,2},{3}})
+	       J = ambientAbstractSimplicialComplexSize(K)
 ///
 
 
@@ -594,7 +644,7 @@ doc ///
 doc ///
      Key
      	  inducedSimplicialChainComplexMap
-	  (inducedSimplicialChainComplexMap,SimplicialSet,SimplicialSet)
+	  (inducedSimplicialChainComplexMap,AbstractSimplicialComplex,AbstractSimplicialComplex)
      Headline
      	  induced maps that arise via inclusions of abstract simplicial complexes
      Description
@@ -604,17 +654,15 @@ doc ///
 	     Simplicial Chain Complexes.  This is made
 	     possible by the method inducedSimplicialChainComplexMap.
 	  Example
-	       K = simplicialSet({{1,2},{3}})
-	       J = ambientSimplicialSet(K)
+	       K = abstractSimplicialComplex({{1,2},{3}})
+	       J = ambientAbstractSimplicialComplex(K)
 	       inducedSimplicialChainComplexMap(J,K)
 ///
-
-
 
 doc ///
      Key
      	  inducedReducedSimplicialChainComplexMap
-	  (inducedReducedSimplicialChainComplexMap,SimplicialSet,SimplicialSet)
+	  (inducedReducedSimplicialChainComplexMap,AbstractSimplicialComplex,AbstractSimplicialComplex)
      Headline
      	  induced maps that arise via inclusions of abstract simplicial complexes
      Description
@@ -624,16 +672,17 @@ doc ///
 	     Reduced Simplicial Chain Complexes.  This is made
 	     possible by the method inducedReducedSimplicialChainComplexMap.
 	  Example
-	       K = simplicialSet({{1,2},{3}})
-	       J = ambientSimplicialSet(K)
+	       K = abstractSimplicialComplex({{1,2},{3}})
+	       J = ambientAbstractSimplicialComplex(K)
 	       inducedReducedSimplicialChainComplexMap(J,K)
 ///
+
 
 
 doc ///
      Key
      	  reducedSimplicialChainComplex
-	  (reducedSimplicialChainComplex,SimplicialSet)
+	  (reducedSimplicialChainComplex,AbstractSimplicialComplex)
      Headline
      	  The reduced homological chain complex that is determined by an abstract simplicial complex 
      Description
@@ -642,14 +691,14 @@ doc ///
 		 homological degree -1 that corresponds to the empty face) that is asociated
 	     to an abstract simplicial complex.  The chain complex is defined over the integers.
           Example
-	       K = simplicialSet({{1,2,3},{2,4,9},{1,2,3,5,7,8},{3,4}})
+	       K = abstractSimplicialComplex({{1,2,3},{2,4,9},{1,2,3,5,7,8},{3,4}})
 	       reducedSimplicialChainComplex(K)
 ///
 
 doc ///
      Key
      	  simplicialChainComplex
-	  (simplicialChainComplex,SimplicialSet)
+	  (simplicialChainComplex,AbstractSimplicialComplex)
      Headline
      	  The non-reduced homological chain complex that is determined by an abstract simplicial complex 
      Description
@@ -658,20 +707,20 @@ doc ///
 		 homological degree -1 that corresponds to the empty face) that is asociated
 	     to an abstract simplicial complex.  The chain complex is defined over the integers.
 	  Example
-	       K = simplicialSet({{1,2,3},{1,4,5},{2,4,5,7}})
+	       K = abstractSimplicialComplex({{1,2,3},{1,4,5},{2,4,5,7}})
 	       C = simplicialChainComplex(K)
 ///
 
 doc ///
      Key
-     	  simplicialSet
-	  (simplicialSet,List)
-	  (simplicialSet,ZZ)
+     	  abstractSimplicialComplex
+	  (abstractSimplicialComplex,List)
+	  (abstractSimplicialComplex,ZZ)
      Headline
-     	  The simplicialSet that is determined by an abstract simplicial complex 
+     	  The abstractSimplicialComplex that is determined by an abstract simplicial complex 
      Description
      	  Text	  
-	     This method returns the SimplicialSet that represents a
+	     This method returns the AbstractSimplicialComplex that represents a
 	     given abstract simplicial complex.
 	     The input is either a given collection of generating faces or an integer.
 	     These facets need not
@@ -679,22 +728,21 @@ doc ///
 	     in lexiographic order.  When the input is an integer, the output is the
 	     corresponding simplex.
 	  Example
-	       simplicialSet({{1,2,3,4}})
-	       simplicialSet({{4,1,2,3}, {3,2,5},{1,5}})
-	       simplicialSet(4)
+	       abstractSimplicialComplex({{1,2,3,4}})
+	       abstractSimplicialComplex({{4,1,2,3}, {3,2,5},{1,5}})
+	       abstractSimplicialComplex(4)
 ///
-
 
 doc ///
      Key
-     	  (symbol _, SimplicialSet, ZZ)
+     	  (symbol _, AbstractSimplicialComplex, ZZ)
      Headline
      	  The k faces of a simplicial set  
      Description
      	  Text	  
-	     This method returns the collection of k faces of a given SimplicialSet.
+	     This method returns the collection of k faces of a given AbstractSimplicialComplex.
 	  Example
-	       K = simplicialSet(3)
+	       K = abstractSimplicialComplex(3)
 	       K_3
 	       K_2
 	       K_1
@@ -705,21 +753,36 @@ doc ///
 doc ///
      Key
           facets 
-          (facets, SimplicialSet)
+          (facets, AbstractSimplicialComplex)
      Headline
      	  The facets of a simplicial set  
      Description
      	  Text	  
-	     This method returns the collection of facets of a given SimplicialSet.
+	     This method returns the collection of facets of a given AbstractSimplicialComplex.
 	  Example
-	       K = simplicialSet(3)
+	       K = abstractSimplicialComplex(3)
 	       facets K
 ///
+
+doc ///
+     Key
+          dimAbstractSimplicialComplex 
+          (dimAbstractSimplicialComplex, AbstractSimplicialComplex)
+     Headline
+     	  The dimension of a simplicial complex  
+     Description
+     	  Text	  
+	     This method returns the dimension a given AbstractSimplicialComplex.
+	  Example
+	       K = abstractSimplicialComplex(3)
+	       dimAbstractSimplicialComplex K
+///
+
 
 
 doc ///
           Key
-       	   (describe, SimplicialSet)
+       	   (describe, AbstractSimplicialComplex)
           Headline
 	       real description
      	  Usage
@@ -755,7 +818,7 @@ viewHelp"AbstractSimplicialComplexes"
 --
 
 -- some possible additional items to add --
--- filteredSimplicialSet
+-- filteredAbstractSimplicialComplex
 --  filteredSimplicialChainComplex
 -- filteredReducedSimplicalChainComplex
 -- however perhaps these would work better in the
@@ -763,53 +826,58 @@ viewHelp"AbstractSimplicialComplexes"
 ----
 
 
+fillMatrix(mutableMatrix(RR,10,10))
+
+-- can use this as a point cloud matrix --
+
+fillMatrix(mutableMatrix(ZZ,10,10),UpperTriangular=>true)
+
+-- is it possible to calculate from this a suitable VR complex depending --
+-- on a randomly chosen parameter?  It seems so. --
+
+ 
+-- To do -- Maybe some statistics on ranks of homology groups etc. (and existence of torsion etc. too) --
 
 
------  Should add a method SimplicialSet == SimplicialSet
------ I.e., isEqual(K,L)
-
---   setRandomSeed(currentTime());
-
-
-K = simplicialSet(3)
-L = randomSimplicialSet(3)
-tally (for i from 1 to 10 list areEqual(K,randomSimplicialSet(3)))
-tally (for i from 1 to 10 list areEqual(K,randomSimplicialSet(3)))
-tally (for i from 1 to 10 list areEqual(K,randomSimplicialSet(3)))
-
---
---
-
-K = simplicialSet(4);
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(4)))
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(4)))
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(4)))
+K = abstractSimplicialComplex(3)
+L = randomAbstractSimplicialComplex(3)
+tally (for i from 1 to 10 list areEqual(K,randomAbstractSimplicialComplex(3)))
+tally (for i from 1 to 10 list areEqual(K,randomAbstractSimplicialComplex(3)))
+tally (for i from 1 to 10 list areEqual(K,randomAbstractSimplicialComplex(3)))
 
 --
 --
 
-K = simplicialSet(5);
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(5)))
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(5)))
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(5)))
+K = abstractSimplicialComplex(4);
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(4)))
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(4)))
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(4)))
+
+--
+--
+
+K = abstractSimplicialComplex(5);
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(5)))
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(5)))
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(5)))
 
 
 --
 --
 
 setRandomSeed(currentTime());
-K = simplicialSet(8);
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(8)))
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(8)))
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(8)))
+K = abstractSimplicialComplex(8);
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(8)))
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(8)))
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(8)))
 
 --
 --
 
-K = randomSimplicialSet(8);
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(8)))
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(8)))
-tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(8)))
+K = randomAbstractSimplicialComplex(8);
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(8)))
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(8)))
+tally (for i from 1 to 100 list areEqual(K,randomAbstractSimplicialComplex(8)))
 
 --
 --
@@ -820,7 +888,7 @@ tally (for i from 1 to 100 list areEqual(K,randomSimplicialSet(8)))
 -- Various testing --
 
 
-L = randomSimplicialSet(4)
+L = randomAbstractSimplicialComplex(4)
 l = simplicialChainComplex L
 isWellDefined oo
 lRed = reducedSimplicialChainComplex L
@@ -845,11 +913,11 @@ isWellDefined oo
 
 --- Various trivial things to test ----
 
-simplicialChainComplex(simplicialSet({{1}}))
+simplicialChainComplex(abstractSimplicialComplex({{1}}))
 
-simplicialChainComplex(simplicialSet({{}}))
+simplicialChainComplex(abstractSimplicialComplex({{}}))
 
-reducedSimplicialChainComplex(simplicialSet({{}}))
+reducedSimplicialChainComplex(abstractSimplicialComplex({{}}))
 
 
 
@@ -859,8 +927,8 @@ reducedSimplicialChainComplex(simplicialSet({{}}))
     return map(l,h,f);
 
 
-K = simplicialSet({{1,2},{3}})
-J = ambientSimplicialSet(K)
+K = abstractSimplicialComplex({{1,2},{3}})
+J = ambientAbstractSimplicialComplex(K)
 k = simplicialChainComplex K
 j = simplicialChainComplex J
     
@@ -872,17 +940,17 @@ inducedSimplicialChainComplexMap(J,K)
 
 -- E.g. 4-simplex --
 
-K = simplicialSet {{1,2,3,4}}
+K = abstractSimplicialComplex {{1,2,3,4}}
 
 k = simplicialChainComplex K
 
-simplicialSet{{2,1,3,4}}
+abstractSimplicialComplex{{2,1,3,4}}
 
 prune HH k
 
 -- E.g. circle
 
-K = simplicialSet {{1,2}, {1,3}, {2,3}}
+K = abstractSimplicialComplex {{1,2}, {1,3}, {2,3}}
 k = simplicialChainComplex K
 k.dd
 prune HH k
@@ -899,7 +967,7 @@ prune k
 -- As in the Klein Bottle Example from M2 Simplicial Complexes Package
 -- Here is a simplicial complex that gives the Klein Bottle -- 
 
-K = simplicialSet {{3, 7, 8}, {1, 7, 8}, {3, 6, 8}, {1, 6, 8}, {5, 6, 7}, {4, 6, 7}, {1, 5,7}, {3, 4, 7}, {2, 5, 6}, {1, 4, 6}, {2, 3, 6}, {3, 4, 5}, {2, 4, 5}, {1, 3, 5}, {1, 2, 4}, {1, 2, 3}}
+K = abstractSimplicialComplex {{3, 7, 8}, {1, 7, 8}, {3, 6, 8}, {1, 6, 8}, {5, 6, 7}, {4, 6, 7}, {1, 5,7}, {3, 4, 7}, {2, 5, 6}, {1, 4, 6}, {2, 3, 6}, {3, 4, 5}, {2, 4, 5}, {1, 3, 5}, {1, 2, 4}, {1, 2, 3}}
 
 k = simplicialChainComplex K
 
@@ -909,7 +977,53 @@ prune HH k
 -- In this example we give a simplicial realization of the fibration $\mathbb{S}^1 \rightarrow {\rm Klein Bottle} \rightarrow \mathbb{S}^1$. To give a simplicial realization of this fibration we first make a simplicial complex which gives a triangulation of the Klein Bottle. The triangulation of the Klein Bottle that we use has 18 facets and is, up to relabling,
 -- the triangulation of the Klein bottle given in Figure 6.14 of Armstrong's book Basic Topology.
 
-K = simplicialSet     {{1,2,7}, {7,8,2}, {4,7,8}, {4,8,5}, {1,4,5}, {1,5,2}, {2,8,3}, {8,3,9}, {5,8,9}, {5,9,6}, {2,5,6}, {2,6,3}, {3,9,1}, {9,1,4}, {6,9,4},{ 6,7,4}, {3,6,7}, {3,7,1}}
+K = abstractSimplicialComplex     {{1,2,7}, {7,8,2}, {4,7,8}, {4,8,5}, {1,4,5}, {1,5,2}, {2,8,3}, {8,3,9}, {5,8,9}, {5,9,6}, {2,5,6}, {2,6,3}, {3,9,1}, {9,1,4}, {6,9,4},{ 6,7,4}, {3,6,7}, {3,7,1}}
 
 prune HH simplicialChainComplex K
+
+randomAbstractSimplicialComplex(3,2)
+
+randomAbstractSimplicialComplex(8,4)
+
+facets randomAbstractSimplicialComplex(6,4)
+
+facets o8
+
+randomAbstractSimplicialComplex(6,3)
+
+abstractSimplicialComplex(6,5)
+
+dimAbstractSimplicialComplex abstractSimplicialComplex(6,5)
+
+dimAbstractSimplicialComplex randomAbstractSimplicialComplex(6,4)
+
+dimAbstractSimplicialComplex randomAbstractSimplicialComplex(5)
+
+setRandomSeed
+
+tally(for i from 1 to 10000 list (dimAbstractSimplicialComplex randomAbstractSimplicialComplex(5)))
+
+-- can we make the random complex Y_d(n,m) which has vertex set
+-- [n] and complete (d − 1)-skeleton, and has exactly m d-dimensional faces,
+-- chosen at random from all binomial(binomial(n,d+1),m) possibilities.
+-- Such random complexes appear in lots of different contexts including in the article
+-- COHEN–LENSTRA HEURISTICS FOR TORSION IN HOMOLOGY OF RANDOM COMPLEXES
+-- (MATTHEW KAHLE, FRANK H. LUTZ, ANDREW NEWMAN, AND KYLE PARSONS) --
+
+randomComplexYdnm := (n,m,d) -> (
+    L := for i from 1 to n list i;
+    dDimlSubsets := subsets(L,d+1);
+    randomFaces := for i from 1 to m list (dDimlSubsets#(random(binomial(n,d+1))));
+    append(append(randomFaces,{L}),subsets(L,d));
+    return abstractSimplicialComplex(randomFaces)
+    )
+
+
+
+setRandomSeed
+
+tally(for i from 1 to 10000 list (facets randomAbstractSimplicialComplex(4,2,2)))
+
+
+tally(for i from 1 to 10000 list (facets randomAbstractSimplicialComplex(8,5,3)))
 
