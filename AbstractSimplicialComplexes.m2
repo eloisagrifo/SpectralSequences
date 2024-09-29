@@ -876,3 +876,22 @@ facets randomVRcomplex(10,.4)
 
 tally(for i from 1 to 1000 list (prune HH reducedSimplicialChainComplex(randomVRcomplex(10,.4))))
 
+
+
+restart
+needsPackage"AbstractSimplicialComplexes";
+time K=abstractSimplicialComplex(12);
+time k = simplicialChainComplex(K);
+time h = HH k;
+time apply(13,i-> i => rank(h_i));
+
+restart
+needsPackage"SimplicialComplexes";
+R = ZZ[x_1..x_12];
+time K=simplexComplex(11,R);
+time k = chainComplex K;
+time h = HH k;
+time apply(13,i-> i => rank(h_i));
+
+
+
