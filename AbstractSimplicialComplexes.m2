@@ -391,7 +391,6 @@ myMatrixList := for i from 0 to m-1 list (
 return matrix myMatrixList
 )
 
-
 --If H <= L then give the induced chain complex map for (non-reduced) simplicalChainComplexes
 
 inducedSimplicialChainComplexMap = method()
@@ -400,8 +399,11 @@ inducedSimplicialChainComplexMap(AbstractSimplicialComplex,AbstractSimplicialCom
 (
     h := simplicialChainComplex H;
     l := simplicialChainComplex L;
-    f := hashTable apply(spots h, i -> if i == -1 then i => map(ZZ^0,ZZ^0,zero) else i => inducedKFaceSimplicialChainComplexMap(i,L,H));
+    if areEqual(abstractSimplicialComplex {{}},H)==true then return map(l,h,zero)
+    else( 
+    f := hashTable apply(spots h, i -> if i == -1 then i => map(l_(-1),h_(-1),zero) else i => inducedKFaceSimplicialChainComplexMap(i,L,H));
     return map(l,h,f);
+    )
    )
 
 --If H <= L then give the induced chain complex map for reduced simplicalChainComplexes
@@ -411,10 +413,12 @@ inducedReducedSimplicialChainComplexMap = method()
 inducedReducedSimplicialChainComplexMap(AbstractSimplicialComplex,AbstractSimplicialComplex) := (L,H) -> (
     h := reducedSimplicialChainComplex H;
     l := reducedSimplicialChainComplex L;
+    if areEqual(abstractSimplicialComplex {{}},H)==true then return map(l,h, hashTable {-2 => map(l_(-2),h_(-2),zero), -1 => map(l_(-1),h_(-1),id_(h_(-1)))})
+    else( 
     f := hashTable apply(spots h, i -> if i == -1 then i => map(l_(-1),h_(-1),id_(h_(-1))) else i => inducedKFaceSimplicialChainComplexMap(i,L,H));
     return map(l,h,f);
     )
-
+    )
 
 -----
  
@@ -644,6 +648,13 @@ doc ///
 	       K = abstractSimplicialComplex({{1,2},{3}})
 	       J = ambientAbstractSimplicialComplex(K)
 	       inducedSimplicialChainComplexMap(J,K)
+	       L = abstractSimplicialComplex {{}}
+               inducedSimplicialChainComplexMap(L,L)
+	       M = abstractSimplicialComplex {{1}}
+	       L = abstractSimplicialComplex {{}}
+	       inducedSimplicialChainComplexMap(M,L)
+     SeeAlso
+          "inducedReducedSimplicialChainComplexMap"             
 ///
 
 doc ///
@@ -662,6 +673,13 @@ doc ///
 	       K = abstractSimplicialComplex({{1,2},{3}})
 	       J = ambientAbstractSimplicialComplex(K)
 	       inducedReducedSimplicialChainComplexMap(J,K)
+               L = abstractSimplicialComplex {{}}
+               inducedReducedSimplicialChainComplexMap(L,L)
+	       M = abstractSimplicialComplex {{1}}
+	       L = abstractSimplicialComplex {{}}
+	       inducedReducedSimplicialChainComplexMap(M,L)
+     SeeAlso
+          "inducedSimplicialChainComplexMap"             
 ///
 
 
@@ -784,7 +802,26 @@ doc ///
 
 -* Test section *-
 TEST /// -* [insert short title for this test] *-
--- test code and assertions here
+assert(
+K = abstractSimplicialComplex({{1,2},{3}});
+J = ambientAbstractSimplicialComplex(K);
+isWellDefined inducedReducedSimplicialChainComplexMap(J,K)
+    )
+assert(
+K = abstractSimplicialComplex({{1,2},{3}});
+J = ambientAbstractSimplicialComplex(K);
+isWellDefined inducedSimplicialChainComplexMap(J,K)
+    )
+assert(
+L = abstractSimplicialComplex({{}});
+isWellDefined inducedReducedSimplicialChainComplexMap(L,L)
+    )
+assert(
+M = abstractSimplicialComplex {{1}};
+L = abstractSimplicialComplex {{}};
+isWellDefined inducedReducedSimplicialChainComplexMap(M,L)
+)
+
 -- may have as many TEST sections as needed
 ///
 
@@ -801,6 +838,4 @@ installPackage("AbstractSimplicialComplexes", RemakeAllDocumentation => true)
 check "AbstractSimplicialComplexes"
 viewHelp"AbstractSimplicialComplexes"
 
---
---
 
