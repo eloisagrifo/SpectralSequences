@@ -78,7 +78,7 @@ new AbstractSimplicialComplex := AbstractSimplicialComplex =>(cl) -> (
 spots AbstractSimplicialComplex := List => (
   K -> sort select(keys K, i -> class i === ZZ))
 
--- This returns the p-faces of a simplicial complex
+-- return the p-faces of a simplicial complex
 
 AbstractSimplicialComplex _ ZZ := AbstractSimplicialComplex => (K,p) -> (
   if K#?p then K#p 
@@ -229,7 +229,7 @@ randomAbstractSimplicialComplex(ZZ,ZZ) := AbstractSimplicialComplex =>(n,r) -> (
 
 -- can we make the random complex Y_d(n,m) which has vertex set
 -- [n] and complete (d − 1)-skeleton, and has exactly m d-dimensional faces,
--- chosen at random from all binomial(binomial(n,d+1),m) possibilities.
+-- chosen at random from all binomial(binomial(n,d+1),m) possibilities?
 -- Such random complexes appear in lots of different contexts including in the article
 -- COHEN–LENSTRA HEURISTICS FOR TORSION IN HOMOLOGY OF RANDOM COMPLEXES
 -- (MATTHEW KAHLE, FRANK H. LUTZ, ANDREW NEWMAN, AND KYLE PARSONS) --
@@ -312,8 +312,8 @@ isDLexSeqI := (y,x) -> (
         z := drop(x,{i,i});
         if y == z then (sign = (-1)^i;
             break);
-);
-return sign
+	);
+    return sign
 )
 
 
@@ -346,7 +346,7 @@ reducedSimplicialChainComplex = method() -- return the chain complex (with contr
 reducedSimplicialChainComplex(AbstractSimplicialComplex) := Complex => (L) ->
 (
     n := max spots L;
-        if n == -1 then (return complex hashTable {-1 => map(ZZ^0,ZZ^1,zero)})
+    if n == -1 then (return complex hashTable {-1 => map(ZZ^0,ZZ^1,zero)})
     else(
     mapsList := for i from 0 to n list (i => simplicialMakeMatrix(L#i,L#(i-1)));
     append(mapsList,-1 => map(ZZ^0,target(mapsList#0)#1,zero)););
@@ -379,16 +379,16 @@ inducedKFaceSimplicialChainComplexMap = method()
 
 inducedKFaceSimplicialChainComplexMap(ZZ,AbstractSimplicialComplex,AbstractSimplicialComplex) := (k,H,L) ->
 (
-M := L_k;
-N := H_k;
-n := # M;
-m := # N;
-myMatrixList := for i from 0 to m-1 list (
-    for j from 0 to n-1 list (
-	if N#i == M#j then 1 else 0 
-	)
-    );
-return matrix myMatrixList
+     M := L_k;
+     N := H_k;
+     n := # M;
+     m := # N;
+     myMatrixList := for i from 0 to m-1 list (
+	 for j from 0 to n-1 list (
+	     if N#i == M#j then 1 else 0 
+	 )
+     );
+     return matrix myMatrixList
 )
 
 --If H <= L then give the induced chain complex map for (non-reduced) simplicalChainComplexes
@@ -404,7 +404,7 @@ inducedSimplicialChainComplexMap(AbstractSimplicialComplex,AbstractSimplicialCom
     f := hashTable apply(spots h, i -> if i == -1 then i => map(l_(-1),h_(-1),zero) else i => inducedKFaceSimplicialChainComplexMap(i,L,H));
     return map(l,h,f);
     )
-   )
+)
 
 --If H <= L then give the induced chain complex map for reduced simplicalChainComplexes
 
@@ -418,7 +418,7 @@ inducedReducedSimplicialChainComplexMap(AbstractSimplicialComplex,AbstractSimpli
     f := hashTable apply(spots h, i -> if i == -1 then i => map(l_(-1),h_(-1),id_(h_(-1))) else i => inducedKFaceSimplicialChainComplexMap(i,L,H));
     return map(l,h,f);
     )
-    )
+)
 
 -----
  
@@ -430,7 +430,7 @@ document {
   Headline => "a package for working with abstract simplicial complexes",
   "In this package our conventions are that `abstract simplicial complexes' have vertices supported on the set [n] := {1,...,n}.
   Our aim is to provide a methology for working with such objects directly.  We are especially interested in homological aspects thereof; in particular
-we provide methods for working with the chain complexes that are associated to each abstract simplicial complex.  We also give some functionality for producing random simplicial complexes",
+we provide methods for working with the chain complexes that are associated to each abstract simplicial complex.  We also give some functionality for producing random simplicial complexes.",
 
    SUBSECTION "An overview of this package",
    UL {
@@ -465,7 +465,7 @@ doc ///
           Example
 	      L = abstractSimplicialComplex(4)
 	  Text
-	       The faces and facets of such simplicial complexes can be accessed as
+	     The faces and facets of such simplicial complexes can be accessed as
 	  Example
 	      K_(-1)
 	      K_0
@@ -539,7 +539,7 @@ doc ///
 	     prune HH simplicialChainComplex L
 	  Text
 	     Create the random complex Y_d(n,m) which has vertex set
-             [n] and complete (d − 1)-skeleton, and has exactly m d-dimensional faces,
+             [n] and complete (d − 1)-skeleton, and has exactly m dimension d faces,
              chosen at random from all binomial(binomial(n,d+1),m) possibilities.
 	  Example
 	     setRandomSeed(currentTime());
@@ -568,7 +568,7 @@ doc ///
      Key
      	  AbstractSimplicialComplex
      Headline
-     	  The type of all simplicial sets
+     	  The type of all abstract simplicial complexes
      Description
      	  Text	  
 	     The type AbstractSimplicialComplex is a data type for working with
@@ -585,10 +585,10 @@ doc ///
          areEqual
 	 (areEqual,AbstractSimplicialComplex,AbstractSimplicialComplex)
     Headline
-         Decide if two simplicial sets are equal
+         Decide if two simplicial complexes are equal
     Description
           Text
-	     Decides if two simplicial sets are equal.
+	     Decides if two simplicial complexes are equal.
 	  Example
 	     areEqual(randomAbstractSimplicialComplex(4),randomAbstractSimplicialComplex(4))
 ///	     
@@ -629,7 +629,7 @@ doc ///
          randomSubSimplicialComplex
 	 (randomSubSimplicialComplex,AbstractSimplicialComplex)
     Headline
-          Create a random sub-simplicial set
+          Create a random sub-simplicial complex
     Description
           Text
 	     Creates a random sub-simplicial complex of a given simplicial complex.
@@ -791,7 +791,7 @@ doc ///
      Key
      	  (symbol _, AbstractSimplicialComplex, ZZ)
      Headline
-     	  The k faces of a simplicial set  
+     	  The k faces of a simplicial complex  
      Description
      	  Text	  
 	     This method returns the collection of k faces of a given AbstractSimplicialComplex.
@@ -809,7 +809,7 @@ doc ///
           facets 
           (facets, AbstractSimplicialComplex)
      Headline
-     	  The facets of a simplicial set  
+     	  The facets of a simplicial complex 
      Description
      	  Text	  
 	     This method returns the collection of facets of a given AbstractSimplicialComplex.
