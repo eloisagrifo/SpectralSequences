@@ -317,7 +317,6 @@ return sign
 )
 
 
-
 -- make a constructor for making matrices
 -- that represented the simplicial boundary
 -- maps of a given simplical complex
@@ -393,7 +392,6 @@ return matrix myMatrixList
 )
 
 
-
 --If H <= L then give the induced chain complex map for (non-reduced) simplicalChainComplexes
 
 inducedSimplicialChainComplexMap = method()
@@ -434,7 +432,6 @@ we provide methods for working with the chain complexes that are associated to e
    UL {
     TO "How to make abstract simplicial complexes", 
     TO "How to make reduced and non-reduced simplicial chain complexes",
-    TO "How to make subsimpliical complexes and induced simplicial chain complex maps",
     },
 }
 
@@ -555,15 +552,25 @@ doc ///
          randomAbstractSimplicialComplex
 	 (randomAbstractSimplicialComplex,ZZ)
 	 (randomAbstractSimplicialComplex,ZZ,ZZ)
-	 (randomAbstractSimplicialComplex,ZZ,ZZ)
+	 (randomAbstractSimplicialComplex,ZZ,ZZ,ZZ)
     Headline
           Create a random simplicial set
     Description
           Text
-	     Creates a random abstract simplicial complex with vertices supported on a subset of [n] = {1,...,n}
+	     Create a random abstract simplicial complex with vertices supported on a subset of [n] = {1,...,n}
           Example
 	     setRandomSeed(currentTime());
 	     K = randomAbstractSimplicialComplex(4)
+	  Text
+	     Create a random simplicial complex on [n] with dimension at most equal to r
+          Example
+	     L = randomAbstractSimplicialComplex(6,3)
+	  Text
+	     Create the random complex Y_d(n,m) which has vertex set
+             [n] and complete (d − 1)-skeleton, and has exactly m d-dimensional faces,
+             chosen at random from all binomial(binomial(n,d+1),m) possibilities.
+	  Example   
+	     M = randomAbstractSimplicialComplex(6,3,2)
     SeeAlso
         "random"
 	"randomSquareFreeMonomialIdeal"
