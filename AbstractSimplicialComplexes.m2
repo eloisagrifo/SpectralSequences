@@ -64,7 +64,7 @@ min Complex := K -> min spots K
 -- The integer keys will output the list of i-simplicies
 
 AbstractSimplicialComplex = new Type of HashTable
-AbstractSimplicialComplex.synonym = "simplicial set"
+AbstractSimplicialComplex.synonym = "abstract simplicial complex"
 
 AbstractSimplicialComplex.GlobalAssignHook = globalAssignFunction
 AbstractSimplicialComplex.GlobalReleaseHook = globalReleaseFunction
@@ -125,7 +125,7 @@ areEqual(AbstractSimplicialComplex,AbstractSimplicialComplex) := Boolean => (K,L
 dimAbstractSimplicialComplex = method()
 
 dimAbstractSimplicialComplex(AbstractSimplicialComplex) := ZZ => (K) -> (
-    return max apply(facets(K), i -> #i)
+    return (max apply(facets(K), i -> #i) - 1)
     )
 
 --- Constructors for AbstractSimplicialComplexs
@@ -429,8 +429,12 @@ document {
   Key => AbstractSimplicialComplexes,
   Headline => "a package for working with abstract simplicial complexes",
   "In this package our conventions are that `abstract simplicial complexes' have vertices supported on the set [n] := {1,...,n}.
-  Our aim is to provide a methology for working with such objects directly.  We are especially interested in homological aspects thereof; in particular
-we provide methods for working with the chain complexes that are associated to each abstract simplicial complex.  We also give some functionality for producing random simplicial complexes.",
+  Our aim is to provide a methology for working with such objects directly.  
+  In this regard our approach differs from that of the package 
+  SimplicialComplexes.m2.
+  Here, we are especially interested in homological aspects of SimplicialComplexes and our approach is to implement such simplicial complexes as certain graded lists. 
+  In particular, we provide methods for working with the chain complexes that are associated to each abstract simplicial complex.  
+  We also give some functionality for producing random simplicial complexes.",
 
    SUBSECTION "An overview of this package",
    UL {
@@ -575,6 +579,10 @@ doc ///
 	     abstract simplicial complexes with vertices supported on [n] = {1,...,n}.
 ///
 
+doc ///
+          Key
+       	   (NewMethod, AbstractSimplicialComplex)
+///
 
 --
 -- Functions and Commands
@@ -847,6 +855,7 @@ doc ///
     	  SeeAlso
 	      	describe	      
 ///
+
 
 
 -* Test section *-
