@@ -119,9 +119,12 @@ spots Complex := List => (
 
 --- we are overloading max & min from Complexes here but this is because
 --- spots isn't implemented there ---
+--- but looking at the Complexes source code ---
+-- max Complex and min Complex behave as desired ---
+-- so we can actaully comment out these next too lines ---
 
-max Complex := K -> max spots K
-min Complex := K -> min spots K
+-- max Complex := K -> max spots K
+-- min Complex := K -> min spots K
 
 support Complex := List => (
      C -> sort select (spots C, i -> C_i != 0))
