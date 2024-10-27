@@ -117,8 +117,11 @@ spots = method()
 spots Complex := List => (
   C -> (c := concentration C; toList(c_0 .. c_1)))
 
---max Complex := K -> max spots K
---min Complex := K -> min spots K
+--- we are overloading max & min from Complexes here but this is because
+--- spots isn't implemented there ---
+
+max Complex := K -> max spots K
+min Complex := K -> min spots K
 
 support Complex := List => (
      C -> sort select (spots C, i -> C_i != 0))
