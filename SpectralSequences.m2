@@ -32,7 +32,7 @@ newPackage(
   "SpectralSequences",
 --  AuxiliaryFiles => true,
   Version => "2.0",
-  Date => "16 October 2024",
+  Date => "27 October 2024",
   Authors => {
        {
       Name => "David Berlekamp", 
@@ -117,8 +117,8 @@ spots = method()
 spots Complex := List => (
   C -> (c := concentration C; toList(c_0 .. c_1)))
 
-max Complex := K -> max spots K
-min Complex := K -> min spots K
+--max Complex := K -> max spots K
+--min Complex := K -> min spots K
 
 support Complex := List => (
      C -> sort select (spots C, i -> C_i != 0))
@@ -127,7 +127,7 @@ support Complex := List => (
 -- the following relies on the pushFwd method from the package "PushForward.m2"
 -- perhaps this should be added to the Complexes package --
 
-pushFwd(RingMap, Complex):=o->(f,C) ->
+pushFwd(RingMap, Complex) := o -> (f,C) ->
 (   -- pushFwdC := complex chainComplex(source f);
      complex hashTable(for i from min C to max C list (i => pushFwd(f,C.dd_i)))
     )
@@ -246,15 +246,15 @@ filteredComplex(Complex) := FilteredComplex => opts-> C->(
 --- Here is the proposed update from  FilteredComplex ** ChainComplex to 
 --- FilteredComplex**Complex
 
-xTensorModules := (p,q,T)->(
+xTensorModules := (p,q,T) -> (
     L := indices T_q;
     P := components T_q;
-    apply(#L,i-> if ((L#i)#0) <=p then image (id_(P_i)) else image(0*id_(P_i)) 
+    apply(#L,i-> if ((L#i)#0) <= p then image (id_(P_i)) else image(0*id_(P_i)) 
 )
 )
 
 
-xTensorComplex := (T,p) ->(
+xTensorComplex := (T,p) -> (
       myList := select(support T, i -> i-1 >= min T);
 	  complex hashTable(for i in myList list (
 		    i => inducedMap(
@@ -264,7 +264,7 @@ xTensorComplex := (T,p) ->(
 		     ))
 		 )
 
-FilteredComplex**Complex:= (K,C) -> ( 
+FilteredComplex ** Complex := (K,C) -> ( 
 		     supp := support K_infinity; 
      -- try to handle the boundary cases --
      if supp != {} and #supp > 1 then (		
@@ -472,7 +472,7 @@ Page.GlobalReleaseHook = globalReleaseFunction
 describe Page := E -> net expression E
 
 new Page := Page => (cl) -> (
-     C := newClass(Page,new MutableHashTable); -- sigh
+     C := newClass(Page, new MutableHashTable); -- sigh
      C.cache = new CacheTable;
      b := C.dd = new PageMap;
      b.degree = {};
@@ -713,10 +713,10 @@ minimalPresentation SpectralSequencePage := prune SpectralSequencePage := Spectr
      spectralSequencePage(E.filteredComplex, E.number, Prune => true)
      )
 
-SpectralSequencePage _ List := Module => (E,i)-> ( source(E.dd _i) )
+SpectralSequencePage _ List := Module => (E,i) -> ( source(E.dd _i) )
 		    
 
-SpectralSequencePage ^ List := Module => (E,i)-> (E_(-i))    
+SpectralSequencePage ^ List := Module => (E,i) -> (E_(-i))    
 
 -- view the modules on a Spectral Sequence Page.  We are referring to these
 -- as the support of the page.
@@ -872,7 +872,7 @@ SpectralSequencePageMap _ List := Matrix => (d,i)-> (if (d)#?i then d#i
 	       	    pruneEpqrMaps(d.filteredComplex,i#0,i#1,- d.degree #0) 	       	    		    
 		    )
 
-SpectralSequencePageMap ^ List := Matrix => (d,i)-> (d_(-i))    
+SpectralSequencePageMap ^ List := Matrix => (d,i) -> (d_(-i))    
 
 pruningMaps = method()
 pruningMaps(SpectralSequencePage) := (E) -> ( if E.Prune == false then error "page is not pruned"
@@ -917,13 +917,13 @@ hilbertPolynomial (SpectralSequencePage) := Page => o -> (E) -> (
     P
     )
 
-basis (ZZ,SpectralSequencePage) := opts -> (deg,E) -> (
+basis (ZZ, SpectralSequencePage) := opts -> (deg,E) -> (
     P := new Page;
     apply(spots E.dd, i -> P#i = basis(deg,E_i));
     P
     )
 
-basis (List,SpectralSequencePage) := opts -> (deg,E) -> (
+basis (List, SpectralSequencePage) := opts -> (deg,E) -> (
     P := new Page;
     apply(spots E.dd, i -> P#i = basis(deg,E_i));
     P
