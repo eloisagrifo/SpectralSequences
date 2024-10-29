@@ -4083,8 +4083,6 @@ doc ///
 ///
 
 TEST ///
-restart;
-needsPackage "SpectralSequences2";
 A = QQ[a,b,c];
 C = complex(A^0);
 K = filteredComplex C;
@@ -4093,8 +4091,6 @@ assert(K_1 == C)
 ///    
 
 TEST ///
-restart;
-needsPackage "SpectralSequences2";
 A = QQ[a,b,c];
 D = simplicialComplex {a*b*c};
 F2D = D;
@@ -4118,8 +4114,6 @@ assert(all(keys support e^5, j -> isIsomorphism homologyIsomorphism(e,j#0,j#1,5)
 ///
 
 TEST ///
-restart
-needsPackage "SpectralSequences2";
 -- The following example is taken from p. 127, Fig 7.2 of 
 -- Zomorodian's "Topology for computing"
 A = ZZ [s,t,u,v,w] ;
@@ -4174,8 +4168,6 @@ assert(all(keys support e^12, j -> isIsomorphism homologyIsomorphism(e,j#0,j#1,1
 ///
 
 TEST ///
-restart
-needsPackage "SpectralSequences2";
 A = QQ[a,b,c,d];
 D = simplicialComplex {a*d*c, a*b, a*c, b*c};
 F2D = D;
@@ -4213,8 +4205,6 @@ assert(all(keys support e^12, j -> isIsomorphism homologyIsomorphism(e,j#0,j#1,1
 ///
 
 TEST ///
-restart
-needsPackage "SpectralSequences2";
 B = QQ[a..d];
 J = ideal vars B;
 C = complex res monomialCurveIdeal(B,{1,3,4});
@@ -4229,8 +4219,6 @@ assert(all(keys support e^4, j -> isIsomorphism homologyIsomorphism(e,j#0,j#1,4)
 
 
 TEST ///
-restart
-needsPackage "SpectralSequences2";
 S = ZZ/101[x,y];
 I = ideal(x^2,x*y,y^2);
 R = S/I;
