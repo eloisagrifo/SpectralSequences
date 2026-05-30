@@ -107,8 +107,6 @@ ReverseDictionary = value Core#"private dictionary"#"ReverseDictionary"
 --------------------------------------------------------------------------------------------------
 --  We have removed almost all of the "patch code" that is now part of the "Complexes" package  --
 -------------------------------------------------------------------------------------------------
---  The writing of some methods are much improved --
-
 -- since things are mutable we don't want to cache spots
 spots = method()
 spots Complex := List => C -> sort keys C.module
